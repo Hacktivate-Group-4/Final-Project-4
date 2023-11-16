@@ -17,7 +17,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "jest --detectOpenHandles",
+    "db:create:test": "npx sequelize db:create",
+    "db:migrate:test": "npx sequelize db:migrate",
+    "db:migrate:prod": "npx sequelize db:migrate"
   },
   "repository": {
     "type": "git",

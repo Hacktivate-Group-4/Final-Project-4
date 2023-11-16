@@ -1,12 +1,11 @@
-const { user, Photo } = require("../models");
-const { generateToken } = require("../helpers/jwt");
-
-const { comparePassword } = require("../helpers/bcrypt");
+const { User, Photo } = require('../models'); // Change 'user' to 'User'
+const { generateToken } = require('../helpers/jwt');
+const { comparePassword } = require('../helpers/bcrypt');
 
 class UserController {
   static async getUsers(req, res) {
     try {
-      const userData = await user.findAll({
+      const userData = await User.findAll({
         include: Photo,
       });
 
@@ -18,8 +17,9 @@ class UserController {
 
   static async register(req, res) {
     try {
+      console.log('register');
       const { username, email, password } = req.body;
-      const result = await user.create({
+      const result = await User.create({
         username,
         email,
         password,
@@ -39,7 +39,7 @@ class UserController {
     try {
       const { email, password } = req.body;
 
-      const userData = await user.findOne({
+      const userData = await User.findOne({
         where: {
           email: email,
         },
@@ -48,7 +48,7 @@ class UserController {
       if (!userData) {
         throw {
           code: 404,
-          message: "user not registered!",
+          message: 'user not registered!',
         };
       }
 
@@ -57,7 +57,7 @@ class UserController {
       if (!isCorrect) {
         throw {
           code: 401,
-          message: "Incorrect password!",
+          message: 'Incorrect password!',
         };
       }
 
