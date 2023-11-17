@@ -6,7 +6,12 @@ class PhotoController {
       include: User,
     })
       .then((result) => {
-        res.status(200).json(result);
+        if (result.length === 0) {
+          // Tidak ada data photo yang ditemukan
+          res.status(404).json({ message: 'Belum ada data photo.' });
+        } else {
+          res.status(200).json(result);
+        }
       })
       .catch((err) => {
         res.status(500).json({ message: err.message });
@@ -94,14 +99,14 @@ class PhotoController {
 
   static async addPhoto(req, res) {
     try {
-      const { title, caption, image_url } = req.body;
+      const { title, caption, poster_image_url } = req.body;
 
       const userData = req.UserData;
 
-      const data = await photo.create({
+      const data = await Photo.create({
         title,
         caption,
-        image_url,
+        poster_image_url,
         UserId: userData.id,
       });
 

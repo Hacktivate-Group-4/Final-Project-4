@@ -95,10 +95,6 @@ class UserController {
         email: userData.email,
         username: userData.username,
         full_name: userData.full_name,
-        password: userData.password,
-        profile_image_url: userData.profile_image_url,
-        age: userData.age,
-        phone_number: userData.phone_number,
       });
 
       res.status(200).json({
