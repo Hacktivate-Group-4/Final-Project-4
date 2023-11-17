@@ -13,51 +13,29 @@ class CommentController {
   }
 
   static async GetOneCommentById(req, res) {
-    const id = +req.params.id;
+    const { id } = req.params;
     try {
       const comment = await Comment.findByPk(id, {
         include: [User, Photo],
       });
+
       if (comment) {
         res.status(200).json(comment);
       } else {
-        res.status(404).json({ message: 'Comment not found' });
+        res.status(404).json({ message: 'Not Found' });
       }
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   }
 
-  static async CreateComment(req, res) {
-    try {
-      const { comment, PhotoId } = req.body;
-      const userData = req.UserData;
-
-      const newComment = await Comment.create({
-        comment,
-        UserId: userData.id,
-        PhotoId,
-      });
-
-      res.status(201).json(newComment);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
   static async UpdateOneCommentById(req, res) {
-    const id = +req.params.id;
-    const { comment } = req.body;
-
+    const { id } = req.params;
+    const { comment, UserId, PhotoId } = req.body;
     try {
       const [updatedRowsCount, updatedRows] = await Comment.update(
-        { comment },
-        {
-          where: {
-            id,
-          },
-          returning: true,
-        }
+        { comment, UserId, PhotoId },
+        { where: { id }, returning: true }
       );
 
       if (updatedRowsCount > 0) {
@@ -71,14 +49,9 @@ class CommentController {
   }
 
   static async DeleteOneCommentById(req, res) {
-    const id = +req.params.id;
-
+    const { id } = req.params;
     try {
-      const deletedRowCount = await Comment.destroy({
-        where: {
-          id,
-        },
-      });
+      const deletedRowCount = await Comment.destroy({ where: { id } });
 
       if (deletedRowCount > 0) {
         res
@@ -87,6 +60,16 @@ class CommentController {
       } else {
         res.status(404).json({ message: `Comment with id ${id} not found` });
       }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async CreateComment(req, res) {
+    const { comment, UserId, PhotoId } = req.body;
+    try {
+      const newComment = await Comment.create({ comment, UserId, PhotoId });
+      res.status(201).json(newComment);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

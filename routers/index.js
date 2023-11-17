@@ -12,6 +12,6 @@ router.use('/photos', authentication, photoRoutes);
 
 router.use('/socials', authentication, socialRoutes);
 
-// router.use('/comments', commentRoutes);
+router.use('/comments', authentication, commentRoutes);
 
 module.exports = router;
