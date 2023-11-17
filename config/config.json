@@ -15,9 +15,9 @@
   },
   "production": {
     "username": "root",
-    "password": null,
-    "database": "db_my_gram",
+    "password": "Dec4f2gb*2gG1EgG2B1*fG3cGd2ff433",
+    "database": "railway",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "postgres"
   }
 }

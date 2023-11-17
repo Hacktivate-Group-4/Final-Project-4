@@ -21,7 +21,8 @@
     "test": "jest --detectOpenHandles",
     "db:create:test": "npx sequelize db:create",
     "db:migrate:test": "npx sequelize db:migrate",
-    "db:migrate:prod": "npx sequelize db:migrate"
+    "db:migrate:prod": "npx sequelize db:migrate",
+    "install": "npx sequelize db:migrate && npm start"
   },
   "repository": {
     "type": "git",
