@@ -20,8 +20,7 @@ class PhotoController {
 
   static GetOnePhotoById(req, res) {
     let id = +req.params.id;
-    photo
-      .findByPk(id)
+    Photo.findByPk(id)
       .then((result) => {
         if (result) {
           res.status(200).json(result);
