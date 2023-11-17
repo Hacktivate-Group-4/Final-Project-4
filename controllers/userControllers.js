@@ -17,18 +17,47 @@ class UserController {
 
   static async register(req, res) {
     try {
-      console.log('register');
-      const { username, email, password } = req.body;
-      const result = await User.create({
+      const {
+        full_name,
+        profile_image_url,
+        age,
+        phone_number,
         username,
         email,
         password,
+      } = req.body;
+
+      const userData = await User.findOne({
+        where: {
+          email: email,
+        },
+      });
+
+      if (userData) {
+        throw {
+          code: 404,
+          message: 'user already registered!',
+        };
+      }
+
+      const result = await User.create({
+        full_name,
+        email,
+        username,
+        password,
+        profile_image_url,
+        age,
+        phone_number,
       });
 
       res.status(201).json({
-        id: result.id,
-        username: result.username,
+        full_name: result.full_name,
         email: result.email,
+        username: result.username,
+        password: result.password,
+        profile_image_url: result.profile_image_url,
+        age: result.age,
+        phone_number: result.phone_number,
       });
     } catch (error) {
       res.status(500).json(error);
@@ -65,6 +94,11 @@ class UserController {
         id: userData.id,
         email: userData.email,
         username: userData.username,
+        full_name: userData.full_name,
+        password: userData.password,
+        profile_image_url: userData.profile_image_url,
+        age: userData.age,
+        phone_number: userData.phone_number,
       });
 
       res.status(200).json({
