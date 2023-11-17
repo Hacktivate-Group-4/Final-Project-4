@@ -1,4 +1,5 @@
 'use strict';
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -11,30 +12,47 @@ module.exports = {
       },
       full_name: {
         type: Sequelize.STRING,
+        allowNull: false, // Validasi notnull
       },
       email: {
         type: Sequelize.STRING,
-        unique: true,
+        unique: true, // Validasi unique
+        allowNull: false, // Validasi notnull
+        validate: {
+          isEmail: true, // Validasi format email
+        },
       },
       username: {
         type: Sequelize.STRING,
+        unique: true, // Validasi unique
+        allowNull: false, // Validasi notnull
       },
       password: {
         type: Sequelize.STRING,
+        allowNull: false, // Validasi notnull
       },
       profile_image_url: {
         type: Sequelize.TEXT,
+        allowNull: false, // Validasi notnull
+        validate: {
+          isUrl: true, // Validasi URL
+        },
       },
       age: {
         type: Sequelize.INTEGER,
+        allowNull: false, // Validasi notnull
+        validate: {
+          isInt: true, // Validasi tipe integer
+        },
       },
       phone_number: {
         type: Sequelize.STRING,
+        allowNull: false, // Validasi notnull
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,

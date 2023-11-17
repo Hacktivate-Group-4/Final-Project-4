@@ -1,11 +1,10 @@
-const { photo, user } = require("../models");
+const { Photo, User } = require('../models');
 
 class PhotoController {
   static GetAllPhotos(req, res) {
-    photo
-      .findAll({
-        include: user,
-      })
+    Photo.findAll({
+      include: User,
+    })
       .then((result) => {
         res.status(200).json(result);
       })
@@ -22,7 +21,7 @@ class PhotoController {
         if (result) {
           res.status(200).json(result);
         } else {
-          res.status(404).json({ message: "Not Found" });
+          res.status(404).json({ message: 'Not Found' });
         }
       })
       .catch((err) => {
