@@ -106,18 +106,26 @@ class UserController {
   }
 
   static async UpdateUserById(req, res) {
-    const id = +req.params.id;
-    const {
-      full_name,
-      email,
-      username,
-      password,
-      profile_image_url,
-      age,
-      phone_number,
-    } = req.body;
-
     try {
+      const id = +req.params.id;
+
+      // Check if ID is provided
+      if (isNaN(id)) {
+        return res.status(400).json({
+          message: 'Bad Request: ID parameter is missing or not a number.',
+        });
+      }
+
+      const {
+        full_name,
+        email,
+        username,
+        password,
+        profile_image_url,
+        age,
+        phone_number,
+      } = req.body;
+
       const userData = req.UserData;
 
       // Only allow the user to update their own data
@@ -156,9 +164,16 @@ class UserController {
   }
 
   static async DeleteUserById(req, res) {
-    const id = +req.params.id;
-
     try {
+      const id = +req.params.id;
+
+      // Check if ID is provided
+      if (isNaN(id)) {
+        return res.status(400).json({
+          message: 'Bad Request: ID parameter is missing or not a number.',
+        });
+      }
+
       const userData = req.UserData;
 
       // Only allow the user to delete their own data
@@ -177,7 +192,7 @@ class UserController {
       if (deletedRowCount > 0) {
         res
           .status(200)
-          .json({ message: `User with id ${id} deleted successfully` });
+          .json({ message: `Your account has been deleted successfully` });
       } else {
         res.status(404).json({ message: `User with id ${id} not found` });
       }

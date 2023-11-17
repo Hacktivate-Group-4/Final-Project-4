@@ -1,4 +1,3 @@
-// models/photo.js
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
@@ -6,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Definisikan asosiasi model jika diperlukan
       Photo.belongsTo(models.User, { foreignKey: 'UserId' });
+      Photo.hasMany(models.Comment, { foreignKey: 'PhotoId' }); // Tambahkan asosiasi ini
     }
   }
   Photo.init(
