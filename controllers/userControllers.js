@@ -104,6 +104,87 @@ class UserController {
       res.status(error.code || 500).json(error);
     }
   }
+
+  static async UpdateUserById(req, res) {
+    const id = +req.params.id;
+    const {
+      full_name,
+      email,
+      username,
+      password,
+      profile_image_url,
+      age,
+      phone_number,
+    } = req.body;
+
+    try {
+      const userData = req.UserData;
+
+      // Only allow the user to update their own data
+      if (userData.id !== id) {
+        return res.status(403).json({
+          message: 'Forbidden: You are not allowed to update this user.',
+        });
+      }
+
+      const [updatedRowsCount, updatedRows] = await User.update(
+        {
+          full_name,
+          email,
+          username,
+          password,
+          profile_image_url,
+          age,
+          phone_number,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+        }
+      );
+
+      if (updatedRowsCount > 0) {
+        res.status(200).json(updatedRows[0]);
+      } else {
+        res.status(404).json({ message: `User with id ${id} not found` });
+      }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async DeleteUserById(req, res) {
+    const id = +req.params.id;
+
+    try {
+      const userData = req.UserData;
+
+      // Only allow the user to delete their own data
+      if (userData.id !== id) {
+        return res.status(403).json({
+          message: 'Forbidden: You are not allowed to delete this user.',
+        });
+      }
+
+      const deletedRowCount = await User.destroy({
+        where: {
+          id,
+        },
+      });
+
+      if (deletedRowCount > 0) {
+        res
+          .status(200)
+          .json({ message: `User with id ${id} deleted successfully` });
+      } else {
+        res.status(404).json({ message: `User with id ${id} not found` });
+      }
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = UserController;

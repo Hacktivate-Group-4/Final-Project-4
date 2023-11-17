@@ -45,10 +45,10 @@ const authentication = async (req, res, next) => {
     }
 
     res.locals.User = UserData;
-    console.log(`ini Userdata ${UserData}`);
-    console.log(`ini locals ${res.locals.User.id}`);
-    console.log(`ini locals ${res.locals.User.username}`);
-    console.log(`ini locals ${res.locals.User.password}`);
+    // console.log(`ini Userdata ${UserData}`);
+    // console.log(`ini locals ${res.locals.User.id}`);
+    // console.log(`ini locals ${res.locals.User.username}`);
+    // console.log(`ini locals ${res.locals.User.password}`);
 
     return next();
   } catch (error) {

@@ -1,14 +1,13 @@
-const { Photo, User } = require('../models');
+const { SocialMedia, User } = require('../models');
 
-class PhotoController {
-  static GetAllPhotos(req, res) {
-    Photo.findAll({
+class SocialController {
+  static GetAllSocials(req, res) {
+    SocialMedia.findAll({
       include: User,
     })
       .then((result) => {
         if (result.length === 0) {
-          // Tidak ada data photo yang ditemukan
-          res.status(404).json({ message: 'Belum ada data photo.' });
+          res.status(404).json({ message: 'Belum ada data social media.' });
         } else {
           res.status(200).json(result);
         }
@@ -18,9 +17,9 @@ class PhotoController {
       });
   }
 
-  static GetOnePhotoById(req, res) {
+  static GetOneSocialById(req, res) {
     let id = +req.params.id;
-    Photo.findByPk(id)
+    SocialMedia.findByPk(id)
       .then((result) => {
         if (result) {
           res.status(200).json(result);
@@ -33,34 +32,32 @@ class PhotoController {
       });
   }
 
-  static UpdateOnePhotoById(req, res) {
+  static async UpdateOneSocialById(req, res) {
     let id = +req.params.id;
-    const { title, caption, poster_image_url } = req.body;
+    const { name, social_media_url } = req.body;
     const userData = req.UserData;
     let data = {
-      title,
-      caption,
-      poster_image_url,
+      name,
+      social_media_url,
       UserId: userData.id,
     };
-    Photo.update(data, {
-      where: {
-        id,
-      },
-      returning: true,
-    })
-      .then((result) => {
-        res.status(200).json(result);
-      })
-      .catch((err) => {
-        res.status(500).json({ message: err.message });
+    try {
+      const result = await SocialMedia.update(data, {
+        where: {
+          id,
+        },
+        returning: true,
       });
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
 
-  static DeleteOnePhotoById(req, res) {
+  static DeleteOneSocialById(req, res) {
     let id = +req.params.id;
 
-    Photo.destroy({
+    SocialMedia.destroy({
       where: {
         id,
       },
@@ -81,16 +78,15 @@ class PhotoController {
       });
   }
 
-  static async CreatePhoto(req, res) {
+  static async CreateSocial(req, res) {
     try {
-      const { title, caption, poster_image_url } = req.body;
+      const { name, social_media_url } = req.body;
 
       const userData = req.UserData;
 
-      const data = await Photo.create({
-        title,
-        caption,
-        poster_image_url,
+      const data = await SocialMedia.create({
+        name,
+        social_media_url,
         UserId: userData.id,
       });
 
@@ -101,4 +97,4 @@ class PhotoController {
   }
 }
 
-module.exports = PhotoController;
+module.exports = SocialController;

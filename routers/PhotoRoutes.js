@@ -1,17 +1,17 @@
-const router = require("express").Router();
-const PhotoController = require("../controllers/photoController");
-const { authorization } = require("../middlewares/authorization");
+const router = require('express').Router();
+const PhotoController = require('../controllers/photoController');
+const { authorization } = require('../middlewares/PhotoAuthorization');
 
-router.get("/", PhotoController.GetAllPhotos);
+router.get('/', PhotoController.GetAllPhotos);
 
-router.get("/:id", PhotoController.GetOnePhotoById);
+router.get('/:id', PhotoController.GetOnePhotoById);
 
-router.use("/:id", authorization);
+router.use('/:id', authorization);
 
-router.post("/", PhotoController.addPhoto);
+router.post('/', PhotoController.CreatePhoto);
 
-router.put("/:id", PhotoController.UpdateOnePhotoById);
+router.put('/:id', PhotoController.UpdateOnePhotoById);
 
-router.delete("/:id", PhotoController.DeleteOnePhotoById);
+router.delete('/:id', PhotoController.DeleteOnePhotoById);
 
 module.exports = router;
