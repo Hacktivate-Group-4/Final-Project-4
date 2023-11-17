@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "npm run db:create:test && npm run db:migrate:prod"
+  },
+  "deploy": {
+    "startCommand": "npm run start"
+  }
+}
