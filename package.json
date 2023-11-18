@@ -18,10 +18,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --detectOpenHandles",
-    "db:create:test": "npx sequelize db:create",
-    "db:migrate:test": "npx sequelize db:migrate",
-    "db:migrate:prod": "npx sequelize db:migrate"
+    "test": "NODE_ENV=test jest --detectOpenHandles",
+    "db:create:test": "NODE_ENV=test npx sequelize db:create",
+    "db:migrate:test": "NODE_ENV=test npx sequelize db:migrate",
+    "db:migrate:prod": "NODE_ENV=production npx sequelize db:migrate"
   },
   "repository": {
     "type": "git",
