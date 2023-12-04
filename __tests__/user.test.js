@@ -61,5 +61,27 @@ describe('Authentication', () => {
       expect(userData.email).toBe(decodedToken.email);
       expect(userData.full_name).toBe(decodedToken.full_name);
     });
+    it('should return 401 for incorrect password', async () => {
+      const response = await request(app)
+        .post('/users/login')
+        .send({ email: user.email, password: 'incorrectpassword' });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        code: 401,
+        message: 'Incorrect password!',
+      });
+    });
+    it('should return 400 for missing email in request', async () => {
+      const response = await request(app)
+        .post('/users/login')
+        .send({ email: 'incorrect email', password: 'password123' });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        code: 404,
+        message: 'user not registered!',
+      });
+    });
   });
 });
