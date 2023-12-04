@@ -112,6 +112,7 @@ class UserController {
       // Check if ID is provided
       if (isNaN(id)) {
         return res.status(400).json({
+          code: 400,
           message: 'Bad Request: ID parameter is missing or not a number.',
         });
       }
@@ -131,6 +132,7 @@ class UserController {
       // Only allow the user to update their own data
       if (userData.id !== id) {
         return res.status(403).json({
+          code: 403,
           message: 'Forbidden: You are not allowed to update this user.',
         });
       }

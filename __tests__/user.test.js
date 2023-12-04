@@ -6,7 +6,7 @@ const { verifyToken } = require('../helpers/jwt');
 describe('Authentication', () => {
   const user = {
     full_name: 'John Doe',
-    email: 'john@example.com',
+    email: 'john@gmail.com',
     username: 'johndoe',
     password: 'password123',
     profile_image_url:
@@ -82,6 +82,53 @@ describe('Authentication', () => {
         code: 404,
         message: 'user not registered!',
       });
+    });
+  });
+
+  describe('PUT /users/:id', () => {
+    const updatedUserData = {
+      full_name: 'John Doe update',
+      email: 'johnupdate@gmail.com',
+      username: 'johndoe update',
+      password: 'password123update',
+      profile_image_url:
+        'https://plus.unsplash.com/premium_photo-1700782893131-1f17b56098d0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyfHx8ZW58MHx8fHx8',
+      age: 12,
+      phone_number: '123456789',
+    };
+    let token = '';
+    let userData;
+    beforeAll(async () => {
+      await User.destroy({ where: { email: updatedUserData.email } });
+      const response = await request(app).post('/users/login').send(user);
+      const decodedToken = verifyToken(response.body.token);
+      token = response.body.token;
+      userData = await User.findByPk(decodedToken.id);
+    });
+    afterAll(async () => {
+      await User.destroy({ where: { email: updatedUserData.email } });
+    });
+
+    it('should update user data and return the updated user details', async () => {
+      const response = await request(app)
+        .put(`/users/${userData.id}`)
+        .set('token', token)
+        .send(updatedUserData);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty(
+        'full_name',
+        updatedUserData.full_name
+      );
+      console.log(response.body);
+      expect(response.body).toHaveProperty(
+        'full_name',
+        updatedUserData.full_name
+      );
+      expect(response.body).toHaveProperty('email', updatedUserData.email);
+      expect(response.body).toHaveProperty(
+        'password',
+        updatedUserData.password
+      );
     });
   });
 });
