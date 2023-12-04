@@ -3,6 +3,8 @@ const UserController = require('../controllers/userControllers');
 const { authentication } = require('../middlewares/auth');
 const { authorization } = require('../middlewares/UserAuthorization');
 
+router.get('/', UserController.getUsers);
+
 router.post('/register', UserController.register);
 
 router.post('/login', UserController.login);

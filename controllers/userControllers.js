@@ -1,4 +1,4 @@
-const { User, Photo } = require('../models'); // Change 'user' to 'User'
+const { User, Photo } = require('../models'); 
 const { generateToken } = require('../helpers/jwt');
 const { comparePassword } = require('../helpers/bcrypt');
 
