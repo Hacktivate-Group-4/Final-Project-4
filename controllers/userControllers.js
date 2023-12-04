@@ -1,4 +1,4 @@
-const { User, Photo } = require('../models'); 
+const { User, Photo } = require('../models');
 const { generateToken } = require('../helpers/jwt');
 const { comparePassword } = require('../helpers/bcrypt');
 
@@ -60,7 +60,7 @@ class UserController {
         phone_number: result.phone_number,
       });
     } catch (error) {
-      res.status(500).json(error);
+      res.status(error.code || 500).json(error);
     }
   }
 
