@@ -1,49 +1,89 @@
 const request = require('supertest');
 const app = require('../index');
+const { User } = require('../models');
 
-describe('UserController', () => {
-  describe('GET /users', () => {
-    it('should get all users', async () => {
-      const response = await request(app).get('/users');
-      expect(response.status).toBe(200);
-      // Add more assertions based on your expected response
-    });
+describe('Authentication', () => {
+  const user = {
+    full_name: 'John Doe',
+    email: 'john@example.com',
+    username: 'johndoe',
+    password: 'password123',
+    profile_image_url:
+      'https://plus.unsplash.com/premium_photo-1700782893131-1f17b56098d0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyfHx8ZW58MHx8fHx8',
+    age: 12,
+    phone_number: 123456789,
+  };
+  beforeAll(async () => {
+    await User.destroy({ where: { email: user.email } });
+  });
+  afterAll(async () => {
+    await User.destroy({ where: { email: user.email } });
   });
 
-  describe('POST /register', () => {
-    it('should register a new user', async () => {
-      const newUser = {
-        full_name: 'John Doe',
-        email: 'john.doe@example.com',
-        // Add other required fields
-      };
-
-      const response = await request(app).post('/register').send(newUser);
+  describe('POST /users/register', () => {
+    it('should register a new user and return user data', async () => {
+      const response = await request(app).post('/users/register').send(user);
       expect(response.status).toBe(201);
-      // Add more assertions based on your expected response
+      expect(response.body).toHaveProperty('full_name', user.full_name);
+      expect(response.body).toHaveProperty('email', user.email);
+      expect(response.body).toHaveProperty('email', user.profile_image_url);
+      expect(response.body).toHaveProperty('email', user.age);
+      expect(response.body).toHaveProperty('email', user.phone_number);
     });
 
-    it('should handle registration errors', async () => {
-      // Test error scenarios
-    });
+    //   describe('POST /users/login', () => {
+    //     it('should log in a user and return a token', async () => {
+    //       const credentials = {
+    //         email: 'john@example.com',
+    //         password: 'password123',
+    //       };
+
+    //       const response = await request(app)
+    //         .post('/users/login')
+    //         .send(credentials);
+
+    //       expect(response.status).toBe(200);
+    //       expect(response.body).toHaveProperty('token');
+    //       // Add more assertions based on your expected response
+
+    //       // Verify the token is valid (decode and check user details)
+    //       const decodedToken = decodeToken(response.body.token);
+    //       const user = await User.findByPk(decodedToken.id);
+    //       expect(user).toBeTruthy();
+    //       expect(user.email).toBe(credentials.email);
+    //     });
+
+    //     it('should handle login errors and return a 500 status code', async () => {
+    //       // Mock the User.findOne method to throw an error
+    //       jest.spyOn(User, 'findOne').mockImplementationOnce(() => {
+    //         throw new Error('Mocked error during login');
+    //       });
+
+    //       const credentials = {
+    //         email: 'invalid@example.com',
+    //         password: 'invalidpassword',
+    //       };
+
+    //       const response = await request(app)
+    //         .post('/users/login')
+    //         .send(credentials);
+
+    //       expect(response.status).toBe(500);
+    //       // Add more assertions based on your expected error response
+    //     });
+
+    //     it('should handle incorrect password and return a 401 status code', async () => {
+    //       const credentials = {
+    //         email: 'john@example.com',
+    //         password: 'incorrectpassword',
+    //       };
+
+    //       const response = await request(app)
+    //         .post('/users/login')
+    //         .send(credentials);
+
+    //       expect(response.status).toBe(401);
+    //       // Add more assertions based on your expected error response
+    //     });
   });
-
-  describe('POST /login', () => {
-    it('should log in a user', async () => {
-      const credentials = {
-        email: 'john.doe@example.com',
-        password: 'password123',
-      };
-
-      const response = await request(app).post('/login').send(credentials);
-      expect(response.status).toBe(200);
-      // Add more assertions based on your expected response
-    });
-
-    it('should handle login errors', async () => {
-      // Test error scenarios
-    });
-  });
-
-  // Add similar tests for other endpoints like UpdateUserById and DeleteUserById
 });

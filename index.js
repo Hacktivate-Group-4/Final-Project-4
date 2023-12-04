@@ -1,8 +1,10 @@
 const express = require('express');
-const app = express();
 const router = require('./routers');
+const dotenv = require('dotenv');
 
-require('dotenv').config();
+const app = express();
+
+dotenv.config();
 
 const port = process.env.PORT;
 
@@ -14,3 +16,5 @@ app.use(router);
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
+
+module.exports = app;
