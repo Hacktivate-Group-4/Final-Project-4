@@ -44,23 +44,22 @@ describe('Authentication', () => {
         'message',
         'user already registered!'
       );
+      expect(response.body).not.toHaveProperty('email', expect.anything());
+      expect(response.body).not.toHaveProperty('password', expect.anything());
     });
   });
 
   describe('POST /users/login', () => {
     it('should log in a user and return a token', async () => {
-      const response = await request(app)
-        .post('/users/login')
-        .send({ email: 'john@example.com', password: 'password123' });
-
+      const response = await request(app).post('/users/login').send(user);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
       const decodedToken = verifyToken(response.body.token);
       expect(decodedToken).toHaveProperty('id');
-      const user = await User.findByPk(decodedToken.id);
-      expect(user).toBeTruthy();
-      expect(user.email).toBe(decodedToken.email);
-      expect(user.full_name).toBe(decodedToken.full_name);
+      const userData = await User.findByPk(decodedToken.id);
+      expect(userData).toBeTruthy();
+      expect(userData.email).toBe(decodedToken.email);
+      expect(userData.full_name).toBe(decodedToken.full_name);
     });
   });
 });
