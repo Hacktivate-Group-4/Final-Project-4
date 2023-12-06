@@ -110,7 +110,7 @@ class UserController {
       const id = +req.params.id;
 
       // Check if ID is provided
-      if (isNaN(id)) {
+      if (Number.isNaN(id)) {
         return res.status(400).json({
           code: 400,
           message: 'Bad Request: ID parameter is missing or not a number.',
@@ -161,7 +161,7 @@ class UserController {
         res.status(404).json({ message: `User with id ${id} not found` });
       }
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(error.code || 500).json(error);
     }
   }
 

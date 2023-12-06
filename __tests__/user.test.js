@@ -130,5 +130,34 @@ describe('Authentication', () => {
         updatedUserData.password
       );
     });
+    it('should fail to update user data when ID parameter is missing or not a number', async () => {
+      const invalidId = 'invalidId';
+      const response = await request(app)
+        .put(`/users/${invalidId}`)
+        .set('token', token)
+        .send(updatedUserData);
+
+      //   expect(response.status).toBe(400);
+      //   expect(response.body).toHaveProperty('code', 400);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Bad Request: ID parameter is missing or not a number.'
+      );
+    });
+
+    it('should fail to update user data when user is not allowed to update', async () => {
+      const otherUserId = userData.id + 1;
+      const response = await request(app)
+        .put(`/users/${otherUserId}`)
+        .set('token', token)
+        .send(updatedUserData);
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('code', 403);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Forbidden: You are not allowed to update this user.'
+      );
+    });
   });
 });
