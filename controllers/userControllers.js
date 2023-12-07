@@ -179,7 +179,6 @@ class UserController {
     try {
       const id = +req.params.id;
 
-      // Check if ID is provided
       if (isNaN(id)) {
         return res.status(400).json({
           message: 'Bad Request: ID parameter is missing or not a number.',
