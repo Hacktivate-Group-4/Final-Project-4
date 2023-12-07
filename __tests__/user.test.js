@@ -20,68 +20,68 @@ describe('Authentication', () => {
     await User.destroy({ where: { email: user.email } });
   });
 
-  // describe('POST /users/register', () => {
-  //   it('should register a new user and return user data', async () => {
-  //     const response = await request(app).post('/users/register').send(user);
-  //     expect(response.status).toBe(201);
-  //     expect(response.body).toHaveProperty('full_name', user.full_name);
-  //     expect(response.body).toHaveProperty('email', user.email);
-  //     expect(response.body).toHaveProperty(
-  //       'profile_image_url',
-  //       user.profile_image_url
-  //     );
-  //     expect(response.body).toHaveProperty('age', user.age);
-  //     expect(response.body).toHaveProperty('phone_number', user.phone_number);
-  //   });
+  describe('POST /users/register', () => {
+    it('should register a new user and return user data', async () => {
+      const response = await request(app).post('/users/register').send(user);
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('full_name', user.full_name);
+      expect(response.body).toHaveProperty('email', user.email);
+      expect(response.body).toHaveProperty(
+        'profile_image_url',
+        user.profile_image_url
+      );
+      expect(response.body).toHaveProperty('age', user.age);
+      expect(response.body).toHaveProperty('phone_number', user.phone_number);
+    });
 
-  //   it('should return an error when the email is already registered', async () => {
-  //     const response = await request(app).post('/users/register').send(user);
-  //     expect(response.status).toBe(404);
-  //     expect(response.body).toHaveProperty('code', 404);
-  //     expect(response.body).toHaveProperty(
-  //       'message',
-  //       'user already registered!'
-  //     );
-  //     expect(response.body).not.toHaveProperty('email', expect.anything());
-  //     expect(response.body).not.toHaveProperty('password', expect.anything());
-  //   });
-  // });
+    it('should return an error when the email is already registered', async () => {
+      const response = await request(app).post('/users/register').send(user);
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('code', 404);
+      expect(response.body).toHaveProperty(
+        'message',
+        'user already registered!'
+      );
+      expect(response.body).not.toHaveProperty('email', expect.anything());
+      expect(response.body).not.toHaveProperty('password', expect.anything());
+    });
+  });
 
-  // describe('POST /users/login', () => {
-  //   it('should log in a user and return a token', async () => {
-  //     const response = await request(app).post('/users/login').send(user);
-  //     expect(response.status).toBe(200);
-  //     expect(response.body).toHaveProperty('token');
-  //     const decodedToken = verifyToken(response.body.token);
-  //     expect(decodedToken).toHaveProperty('id');
-  //     const userData = await User.findByPk(decodedToken.id);
-  //     expect(userData).toBeTruthy();
-  //     expect(userData.email).toBe(decodedToken.email);
-  //     expect(userData.full_name).toBe(decodedToken.full_name);
-  //   });
-  //   it('should return 401 for incorrect password', async () => {
-  //     const response = await request(app)
-  //       .post('/users/login')
-  //       .send({ email: user.email, password: 'incorrectpassword' });
+  describe('POST /users/login', () => {
+    it('should log in a user and return a token', async () => {
+      const response = await request(app).post('/users/login').send(user);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('token');
+      const decodedToken = verifyToken(response.body.token);
+      expect(decodedToken).toHaveProperty('id');
+      const userData = await User.findByPk(decodedToken.id);
+      expect(userData).toBeTruthy();
+      expect(userData.email).toBe(decodedToken.email);
+      expect(userData.full_name).toBe(decodedToken.full_name);
+    });
+    it('should return 401 for incorrect password', async () => {
+      const response = await request(app)
+        .post('/users/login')
+        .send({ email: user.email, password: 'incorrectpassword' });
 
-  //     expect(response.status).toBe(401);
-  //     expect(response.body).toEqual({
-  //       code: 401,
-  //       message: 'Incorrect password!',
-  //     });
-  //   });
-  //   it('should return 400 for missing email in request', async () => {
-  //     const response = await request(app)
-  //       .post('/users/login')
-  //       .send({ email: 'incorrect email', password: 'password123' });
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        code: 401,
+        message: 'Incorrect password!',
+      });
+    });
+    it('should return 400 for missing email in request', async () => {
+      const response = await request(app)
+        .post('/users/login')
+        .send({ email: 'incorrect email', password: 'password123' });
 
-  //     expect(response.status).toBe(404);
-  //     expect(response.body).toEqual({
-  //       code: 404,
-  //       message: 'user not registered!',
-  //     });
-  //   });
-  // });
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        code: 404,
+        message: 'user not registered!',
+      });
+    });
+  });
 
   describe('PUT /users/:id', () => {
     const updatedUserData = {
@@ -142,7 +142,6 @@ describe('Authentication', () => {
         .put(`/users/${invalidId}`)
         .set('token', token)
         .send(updatedUserData);
-      console.log(response.body);
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('code', 400);
       expect(response.body).toHaveProperty(
@@ -162,7 +161,6 @@ describe('Authentication', () => {
         .put(`/users/${otherUserId}`)
         .set('token', token)
         .send(updatedUserData);
-      console.log(response.body);
       const decodedToken = verifyToken(token);
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('name', 'Data not found');
@@ -170,6 +168,25 @@ describe('Authentication', () => {
         'message',
         `user with id ${decodedToken.id + 1} not found`
       );
+    });
+  });
+
+  describe('Delete /users/:id', () => {
+    it('should delete user data and return the success message', async () => {
+      await User.destroy({ where: { email: user.email } });
+      await request(app).post('/users/register').send(user);
+      await request(app).post('/users/login').send(user);
+      const userLogin = await request(app).post('/users/login').send(user);
+      const decodedToken = verifyToken(userLogin.body.token);
+      token = userLogin.body.token;
+      userData = decodedToken;
+
+      const response = await request(app)
+        .delete(`/users/${userData.id}`)
+        .set('token', token)
+        .send(user);
+      console.log(response);
+      expect(response.status).toBe(200);
     });
   });
 });
