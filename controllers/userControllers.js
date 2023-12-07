@@ -1,6 +1,6 @@
 const { User, Photo } = require('../models');
 const { generateToken } = require('../helpers/jwt');
-const { comparePassword } = require('../helpers/bcrypt');
+const { comparePassword, hashPassword } = require('../helpers/bcrypt');
 
 class UserController {
   static async getUsers(req, res) {
@@ -10,6 +10,27 @@ class UserController {
       });
 
       res.status(200).json(userData);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  static async getUserById(req, res) {
+    try {
+      const userId = +req.params.id;
+
+      console.log(userId);
+
+      const user = await User.findOne(userId, {
+        include: Photo,
+      });
+      console.log(user);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json(user);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -109,7 +130,6 @@ class UserController {
     try {
       const id = +req.params.id;
 
-      // Check if ID is provided
       if (Number.isNaN(id)) {
         return res.status(400).json({
           code: 400,
@@ -127,22 +147,12 @@ class UserController {
         phone_number,
       } = req.body;
 
-      const userData = req.UserData;
-
-      // Only allow the user to update their own data
-      if (userData.id !== id) {
-        return res.status(403).json({
-          code: 403,
-          message: 'Forbidden: You are not allowed to update this user.',
-        });
-      }
-
       const [updatedRowsCount, updatedRows] = await User.update(
         {
           full_name,
           email,
           username,
-          password,
+          password: hashPassword(password),
           profile_image_url,
           age,
           phone_number,

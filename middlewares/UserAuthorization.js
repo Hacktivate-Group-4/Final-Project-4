@@ -4,6 +4,13 @@ function authorization(req, res, next) {
   const userId = req.params.id;
   const authenticatedUser = res.locals.User;
 
+  if (isNaN(parseInt(userId, 10))) {
+    return res.status(400).json({
+      code: 400,
+      message: 'Bad Request: ID parameter is missing or not a number.',
+    });
+  }
+
   if (!authenticatedUser) {
     return res.status(401).json({
       name: 'Unauthorized',
@@ -20,7 +27,7 @@ function authorization(req, res, next) {
       if (!founduser) {
         return res.status(404).json({
           name: 'Data not found',
-          devMessage: `user with id ${userId} not found`,
+          message: `user with id ${userId} not found`,
         });
       }
       // console.log(founduser.id === authenticatedUser.id);
@@ -29,7 +36,7 @@ function authorization(req, res, next) {
       } else {
         return res.status(403).json({
           name: 'Authorization failed',
-          devMessage: `User with id ${founduser.userid} does not have permission to access the user`,
+          message: `User with id ${founduser.userid} does not have permission to access the user`,
         });
       }
     })
