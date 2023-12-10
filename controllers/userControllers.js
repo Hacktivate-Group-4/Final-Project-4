@@ -19,12 +19,12 @@ class UserController {
     try {
       const userId = +req.params.id;
 
-      console.log(userId);
-
-      const user = await User.findOne(userId, {
+      const user = await User.findOne({
+        where: {
+          id: userId,
+        },
         include: Photo,
       });
-      console.log(user);
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });

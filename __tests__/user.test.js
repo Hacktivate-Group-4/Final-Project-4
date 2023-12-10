@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../index');
 const { User } = require('../models');
 const { verifyToken } = require('../helpers/jwt');
-const { hashPassword } = require('../helpers/bcrypt');
 
 describe('Authentication', () => {
   const user = {
@@ -184,6 +183,20 @@ describe('Authentication', () => {
       expect(response.body).toHaveProperty(
         'message',
         'Bad Request: ID parameter is missing or not a number.'
+      );
+    });
+    it('should fail to update user data when user is not allowed to update', async () => {
+      const otherUserId = userData.id + 1;
+      const response = await request(app)
+        .delete(`/users/${otherUserId}`)
+        .set('token', token)
+        .send(user);
+      const decodedToken = verifyToken(token);
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('name', 'Data not found');
+      expect(response.body).toHaveProperty(
+        'message',
+        `user with id ${decodedToken.id + 1} not found`
       );
     });
   });
