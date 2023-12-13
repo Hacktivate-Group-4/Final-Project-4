@@ -25,10 +25,7 @@ describe('Authentication', () => {
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('full_name', user.full_name);
       expect(response.body).toHaveProperty('email', user.email);
-      expect(response.body).toHaveProperty(
-        'profile_image_url',
-        user.profile_image_url
-      );
+      expect(response.body).toHaveProperty('profile_image_url', user.profile_image_url);
       expect(response.body).toHaveProperty('age', user.age);
       expect(response.body).toHaveProperty('phone_number', user.phone_number);
     });
@@ -37,10 +34,7 @@ describe('Authentication', () => {
       const response = await request(app).post('/users/register').send(user);
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('code', 404);
-      expect(response.body).toHaveProperty(
-        'message',
-        'user already registered!'
-      );
+      expect(response.body).toHaveProperty('message', 'user already registered!');
       expect(response.body).not.toHaveProperty('email', expect.anything());
       expect(response.body).not.toHaveProperty('password', expect.anything());
     });
@@ -110,19 +104,13 @@ describe('Authentication', () => {
         .set('token', token)
         .send(updatedUserData);
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty(
-        'full_name',
-        updatedUserData.full_name
-      );
+      expect(response.body).toHaveProperty('full_name', updatedUserData.full_name);
       expect(response.body).toHaveProperty('email', updatedUserData.email);
     });
 
     it('should fail to update user data when ID parameter is missing or not a number', async () => {
       const invalidId = 'invalidId';
-      const response = await request(app)
-        .put(`/users/${invalidId}`)
-        .set('token', token)
-        .send(user);
+      const response = await request(app).put(`/users/${invalidId}`).set('token', token).send(user);
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('code', 400);
       expect(response.body).toHaveProperty(
@@ -166,10 +154,7 @@ describe('Authentication', () => {
         .send(user);
       console.log(response.body);
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty(
-        'message',
-        'Your account has been deleted successfully'
-      );
+      expect(response.body).toHaveProperty('message', 'Your account has been deleted successfully');
     });
     it('should fail to delete user data when ID parameter is missing or not a number', async () => {
       const invalidId = 'invalidId';
