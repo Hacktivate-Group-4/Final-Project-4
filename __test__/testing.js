@@ -1,4 +1,4 @@
-const { User, Photo, Comment } = require("../models");
+const { User, Photo, Comment, SocialMedia } = require("../models");
 const { generateToken } = require("../helpers/jwt");
 
 const dataUser = {
@@ -43,12 +43,25 @@ const createPhoto = async ( idPhoto, title, idUser) => {
 
 const createComment = async (idComment, idPhoto, idUser, ) => {
   try {
-    console.log("idPhoto:", idPhoto);
-    console.log("idUser:", idUser);
+    // console.log("idPhoto:", idPhoto);
+    // console.log("idUser:", idUser);
     await Comment.create({
       id:idComment,
       comment: "commentsTest",
       PhotoId:idPhoto,
+      UserId:idUser
+    });
+    console.log("Comments created successfully!");
+  } catch (error) {
+    console.error("Error creating comments:", error.message);
+  }
+};
+const createSocial = async (idSocial, idUser ) => {
+  try {
+    await SocialMedia.create({
+      id:idSocial,
+      name:"sosialTest", 
+      social_media_url:"https://github.com/nama_pengguna",
       UserId:idUser
     });
     console.log("Comments created successfully!");
@@ -66,4 +79,4 @@ const generateTokenTesting = async (user) => {
   });
 };
 
-module.exports = { createUser, generateTokenTesting, createPhoto, createComment };
+module.exports = { createUser, generateTokenTesting, createPhoto, createComment, createSocial };
