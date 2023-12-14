@@ -17,11 +17,16 @@ describe('Authentication', () => {
 
   beforeAll(async () => {
     await User.destroy({ where: { email: user.email } });
+    server = app.listen();
+  });
+
+  afterAll((done) => {
+    server.close(done);
   });
 
   describe('POST /users/register', () => {
     it('should register a new user and return user data', async () => {
-      const response = await request(app).post('/users/register').send(user);
+      const response = await request(server).post('/users/register').send(user);
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('full_name', user.full_name);
       expect(response.body).toHaveProperty('email', user.email);
@@ -31,7 +36,7 @@ describe('Authentication', () => {
     });
 
     it('should return an error when the email is already registered', async () => {
-      const response = await request(app).post('/users/register').send(user);
+      const response = await request(server).post('/users/register').send(user);
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('code', 404);
       expect(response.body).toHaveProperty('message', 'user already registered!');
@@ -42,7 +47,7 @@ describe('Authentication', () => {
 
   describe('POST /users/login', () => {
     it('should log in a user and return a token', async () => {
-      const response = await request(app).post('/users/login').send(user);
+      const response = await request(server).post('/users/login').send(user);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
       const decodedToken = verifyToken(response.body.token);
@@ -53,7 +58,7 @@ describe('Authentication', () => {
       expect(userData.full_name).toBe(decodedToken.full_name);
     });
     it('should return 401 for incorrect password', async () => {
-      const response = await request(app)
+      const response = await request(server)
         .post('/users/login')
         .send({ email: user.email, password: 'incorrectpassword' });
 
@@ -64,7 +69,7 @@ describe('Authentication', () => {
       });
     });
     it('should return 400 for missing email in request', async () => {
-      const response = await request(app)
+      const response = await request(server)
         .post('/users/login')
         .send({ email: 'incorrect email', password: 'password123' });
 
@@ -92,14 +97,14 @@ describe('Authentication', () => {
     beforeEach(async () => {
       await User.destroy({ where: { email: updatedUserData.email } });
       await User.destroy({ where: { email: user.email } });
-      await request(app).post('/users/register').send(user);
-      const response = await request(app).post('/users/login').send(user);
+      await request(server).post('/users/register').send(user);
+      const response = await request(server).post('/users/login').send(user);
       const decodedToken = verifyToken(response.body.token);
       token = response.body.token;
       userData = decodedToken;
     });
     it('should update user data and return the updated user details', async () => {
-      const response = await request(app)
+      const response = await request(server)
         .put(`/users/${userData.id}`)
         .set('token', token)
         .send(updatedUserData);
@@ -110,7 +115,10 @@ describe('Authentication', () => {
 
     it('should fail to update user data when ID parameter is missing or not a number', async () => {
       const invalidId = 'invalidId';
-      const response = await request(app).put(`/users/${invalidId}`).set('token', token).send(user);
+      const response = await request(server)
+        .put(`/users/${invalidId}`)
+        .set('token', token)
+        .send(user);
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('code', 400);
       expect(response.body).toHaveProperty(
@@ -121,7 +129,7 @@ describe('Authentication', () => {
 
     it('should fail to update user data when user is not allowed to update', async () => {
       const otherUserId = userData.id + 1;
-      const response = await request(app)
+      const response = await request(server)
         .put(`/users/${otherUserId}`)
         .set('token', token)
         .send(user);
@@ -140,15 +148,15 @@ describe('Authentication', () => {
     let userData;
     beforeEach(async () => {
       await User.destroy({ where: { email: user.email } });
-      await request(app).post('/users/register').send(user);
-      await request(app).post('/users/login').send(user);
-      const userLogin = await request(app).post('/users/login').send(user);
+      await request(server).post('/users/register').send(user);
+      await request(server).post('/users/login').send(user);
+      const userLogin = await request(server).post('/users/login').send(user);
       const decodedToken = verifyToken(userLogin.body.token);
       token = userLogin.body.token;
       userData = decodedToken;
     });
     it('should delete user data and return the success message', async () => {
-      const response = await request(app)
+      const response = await request(server)
         .delete(`/users/${userData.id}`)
         .set('token', token)
         .send(user);
@@ -159,7 +167,7 @@ describe('Authentication', () => {
     it('should fail to delete user data when ID parameter is missing or not a number', async () => {
       const invalidId = 'invalidId';
 
-      const response = await request(app)
+      const response = await request(server)
         .delete(`/users/${invalidId}`)
         .set('token', token)
         .send(user);
@@ -172,7 +180,7 @@ describe('Authentication', () => {
     });
     it('should fail to update user data when user is not allowed to update', async () => {
       const otherUserId = userData.id + 1;
-      const response = await request(app)
+      const response = await request(server)
         .delete(`/users/${otherUserId}`)
         .set('token', token)
         .send(user);

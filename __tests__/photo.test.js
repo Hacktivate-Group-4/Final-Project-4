@@ -18,18 +18,23 @@ describe('Authentication', () => {
   };
 
   beforeAll(async () => {
+    server = app.listen();
     await User.destroy({ where: { email: user.email } });
-    await request(app).post('/users/register').send(user);
-    await request(app).post('/users/login').send(user);
-    const userLogin = await request(app).post('/users/login').send(user);
+    await request(server).post('/users/register').send(user);
+    await request(server).post('/users/login').send(user);
+    const userLogin = await request(server).post('/users/login').send(user);
     const decodedToken = verifyToken(userLogin.body.token);
     token = userLogin.body.token;
     userData = decodedToken;
   });
 
+  afterAll((done) => {
+    server.close(done);
+  });
+
   describe('POST /photos', () => {
     it('should get all photos data and return the all photo datas', async () => {
-      const response = await request(app).get(`/photos/`).set('token', token).send(user);
+      const response = await request(server).get(`/photos/`).set('token', token).send(user);
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
