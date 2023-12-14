@@ -4,6 +4,7 @@ const { User } = require('../models');
 const { verifyToken } = require('../helpers/jwt');
 
 describe('Authentication', () => {
+  let server;
   let token = '';
   let userData;
   const user = {
@@ -32,6 +33,10 @@ describe('Authentication', () => {
     server.close(done);
   });
 
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(() => resolve(), 500));
+  });
+
   describe('POST /photos', () => {
     it('should get all photos data and return the all photo datas', async () => {
       const response = await request(server).get(`/photos/`).set('token', token).send(user);
@@ -48,17 +53,17 @@ describe('Authentication', () => {
       expect(photo).toHaveProperty('updatedAt');
       expect(photo).toHaveProperty('Comments');
       expect(photo).toHaveProperty('User');
-      const user = photo.User;
-      expect(user).toHaveProperty('id');
-      expect(user).toHaveProperty('full_name');
-      expect(user).toHaveProperty('email');
-      expect(user).toHaveProperty('username');
-      expect(user).toHaveProperty('password');
-      expect(user).toHaveProperty('profile_image_url');
-      expect(user).toHaveProperty('age');
-      expect(user).toHaveProperty('phone_number');
-      expect(user).toHaveProperty('createdAt');
-      expect(user).toHaveProperty('updatedAt');
+      const userPhoto = photo.User;
+      expect(userPhoto).toHaveProperty('id');
+      expect(userPhoto).toHaveProperty('full_name');
+      expect(userPhoto).toHaveProperty('email');
+      expect(userPhoto).toHaveProperty('username');
+      expect(userPhoto).toHaveProperty('password');
+      expect(userPhoto).toHaveProperty('profile_image_url');
+      expect(userPhoto).toHaveProperty('age');
+      expect(userPhoto).toHaveProperty('phone_number');
+      expect(userPhoto).toHaveProperty('createdAt');
+      expect(userPhoto).toHaveProperty('updatedAt');
     });
   });
 });

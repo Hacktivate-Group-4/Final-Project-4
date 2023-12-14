@@ -17,8 +17,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "jest --detectOpenHandles",
+    "start": "node server/server.js",
+    "test": "jest --detectOpenHandles --verbose",
     "db:create:test": "SET NODE_ENV=test npx sequelize-cli db:create",
     "db:migrate:test": "SET NODE_ENV=test npx sequelize-cli db:migrate",
     "db:migrate:prod": "SET NODE_ENV=production npx sequelize-cli db:migrate"

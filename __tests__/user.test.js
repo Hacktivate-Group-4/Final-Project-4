@@ -4,6 +4,7 @@ const { User } = require('../models');
 const { verifyToken } = require('../helpers/jwt');
 
 describe('Authentication', () => {
+  let server;
   const user = {
     full_name: 'John Doe',
     email: 'john@gmail.com',
@@ -22,6 +23,10 @@ describe('Authentication', () => {
 
   afterAll((done) => {
     server.close(done);
+  });
+
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(() => resolve(), 500));
   });
 
   describe('POST /users/register', () => {
@@ -160,7 +165,6 @@ describe('Authentication', () => {
         .delete(`/users/${userData.id}`)
         .set('token', token)
         .send(user);
-      console.log(response.body);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'Your account has been deleted successfully');
     });
