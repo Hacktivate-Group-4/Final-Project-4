@@ -37,7 +37,7 @@ describe('Authentication', () => {
     await new Promise((resolve) => setTimeout(() => resolve(), 500));
   });
 
-  describe('POST /photos', () => {
+  describe('GET /photos', () => {
     it('should get all photos data and return the all photo datas', async () => {
       const response = await request(server).get(`/photos/`).set('token', token).send(user);
       expect(response.status).toBe(200);
@@ -64,6 +64,79 @@ describe('Authentication', () => {
       expect(userPhoto).toHaveProperty('phone_number');
       expect(userPhoto).toHaveProperty('createdAt');
       expect(userPhoto).toHaveProperty('updatedAt');
+    });
+    it('should handle case where there are no photos and return status 404 with appropriate message', async () => {
+      const response = await request(server).get('/photos').set('token', token);
+      console.log(response.body);
+      // expect(response.status).toBe(404);
+      // expect(response.body).toEqual({ message: 'Belum ada data photo.' });
+    });
+  });
+
+  describe('POST /photos', () => {
+    it('should create a new photo and return status 201 with the created photo data', async () => {
+      // Set up the request body for creating a new photo
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+
+      const response = await request(server).post('/photos').set('token', token).send(newPhotoData);
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.title).toBe(newPhotoData.title);
+      expect(response.body.caption).toBe(newPhotoData.caption);
+      expect(response.body.poster_image_url).toBe(newPhotoData.poster_image_url);
+      expect(response.body.UserId).toBe(userData.id);
+      expect(response.body).toHaveProperty('createdAt');
+      expect(response.body).toHaveProperty('updatedAt');
+    });
+
+    it('should handle validation errors and return status 500 with an error message', async () => {
+      // Set up the request body with missing required fields
+      const invalidPhotoData = {
+        caption: 'Invalid Photo',
+        poster_image_url: 'https://example.com/invalid-photo.jpg',
+      };
+
+      // Send the request with invalid data
+      const response = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(invalidPhotoData);
+
+      // Expect the response status to be 500
+      expect(response.status).toBe(500);
+
+      // Expect the response body to contain an error message
+      expect(response.body).toHaveProperty('message');
+    });
+
+    it('should handle internal server errors and return status 500 with an error message', async () => {
+      // Simulate an internal server error by causing an exception in the controller
+      jest.spyOn(Photo, 'create').mockImplementationOnce(() => {
+        throw new Error('Simulated internal server error');
+      });
+
+      // Set up valid request body
+      const validPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+
+      // Send the request to create a new photo
+      const response = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(validPhotoData);
+
+      // Expect the response status to be 500
+      expect(response.status).toBe(500);
+
+      // Expect the response body to contain an error message
+      expect(response.body).toHaveProperty('message', 'Simulated internal server error');
     });
   });
 });

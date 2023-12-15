@@ -18,10 +18,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
-    "test": "jest --detectOpenHandles --verbose",
-    "db:create:test": "SET NODE_ENV=test npx sequelize-cli db:create",
-    "db:migrate:test": "SET NODE_ENV=test npx sequelize-cli db:migrate",
-    "db:migrate:prod": "SET NODE_ENV=production npx sequelize-cli db:migrate"
+    "test": "set NODE_ENV=test&& jest --detectOpenHandles --verbose",
+    "db:create:test": "set NODE_ENV=test&& npx sequelize-cli db:drop && npx sequelize-cli db:create",
+    "db:migrate:test": "set NODE_ENV=test&& npx sequelize-cli db:migrate",
+    "db:migrate:prod": "set NODE_ENV=production&& npx sequelize-cli db:migrate"
   },
   "repository": {
     "type": "git",

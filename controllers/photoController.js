@@ -7,7 +7,6 @@ class PhotoController {
     })
       .then((result) => {
         if (result.length === 0) {
-          // Tidak ada data photo yang ditemukan
           res.status(404).json({ message: 'Belum ada data photo.' });
         } else {
           res.status(200).json(result);
@@ -67,13 +66,9 @@ class PhotoController {
     })
       .then((result) => {
         if (result === 1) {
-          res
-            .status(200)
-            .json({ message: `Data dengan ID ${id} berhasil dihapus.` });
+          res.status(200).json({ message: `Data dengan ID ${id} berhasil dihapus.` });
         } else {
-          res
-            .status(404)
-            .json({ message: `Data dengan ID ${id} tidak ditemukan.` });
+          res.status(404).json({ message: `Data dengan ID ${id} tidak ditemukan.` });
         }
       })
       .catch((err) => {
