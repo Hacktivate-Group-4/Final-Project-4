@@ -80,6 +80,15 @@ class PhotoController {
     try {
       const { title, caption, poster_image_url } = req.body;
 
+      // Validate that required fields are present
+      if (!title || !caption || !poster_image_url) {
+        return res.status(400).json({
+          code: 400,
+          message: 'Title, caption, and poster_image_url are required fields.',
+          data: req.body,
+        });
+      }
+
       const userData = req.UserData;
 
       const data = await Photo.create({
@@ -91,7 +100,13 @@ class PhotoController {
 
       res.status(201).json(data);
     } catch (error) {
-      res.status(500).json(error);
+      console.error('Error creating photo:', error);
+
+      if (error.name === 'SequelizeValidationError') {
+        const errors = error.errors.map((err) => ({ message: err.message, path: err.path }));
+        return res.status(400).json({ errors, message: 'Validation error.' });
+      }
+      res.status(500).json({ message: 'Internal Server Error.' });
     }
   }
 }

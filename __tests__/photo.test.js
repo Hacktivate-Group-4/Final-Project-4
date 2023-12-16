@@ -20,6 +20,9 @@ describe('Authentication', () => {
 
   beforeAll(async () => {
     server = app.listen();
+  });
+
+  beforeEach(async () => {
     await User.destroy({ where: { email: user.email } });
     await request(server).post('/users/register').send(user);
     await request(server).post('/users/login').send(user);
@@ -34,48 +37,11 @@ describe('Authentication', () => {
   });
 
   afterEach(async () => {
-    await new Promise((resolve) => setTimeout(() => resolve(), 500));
-  });
-
-  describe('GET /photos', () => {
-    it('should get all photos data and return the all photo datas', async () => {
-      const response = await request(server).get(`/photos/`).set('token', token).send(user);
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-      const photo = response.body[0];
-      expect(photo).toHaveProperty('id');
-      expect(photo).toHaveProperty('title');
-      expect(photo).toHaveProperty('caption');
-      expect(photo).toHaveProperty('poster_image_url');
-      expect(photo).toHaveProperty('UserId');
-      expect(photo).toHaveProperty('createdAt');
-      expect(photo).toHaveProperty('updatedAt');
-      expect(photo).toHaveProperty('Comments');
-      expect(photo).toHaveProperty('User');
-      const userPhoto = photo.User;
-      expect(userPhoto).toHaveProperty('id');
-      expect(userPhoto).toHaveProperty('full_name');
-      expect(userPhoto).toHaveProperty('email');
-      expect(userPhoto).toHaveProperty('username');
-      expect(userPhoto).toHaveProperty('password');
-      expect(userPhoto).toHaveProperty('profile_image_url');
-      expect(userPhoto).toHaveProperty('age');
-      expect(userPhoto).toHaveProperty('phone_number');
-      expect(userPhoto).toHaveProperty('createdAt');
-      expect(userPhoto).toHaveProperty('updatedAt');
-    });
-    it('should handle case where there are no photos and return status 404 with appropriate message', async () => {
-      const response = await request(server).get('/photos').set('token', token);
-      console.log(response.body);
-      // expect(response.status).toBe(404);
-      // expect(response.body).toEqual({ message: 'Belum ada data photo.' });
-    });
+    await User.destroy({ where: { email: user.email } });
   });
 
   describe('POST /photos', () => {
     it('should create a new photo and return status 201 with the created photo data', async () => {
-      // Set up the request body for creating a new photo
       const newPhotoData = {
         title: 'New Photo',
         caption: 'A beautiful new photo',
@@ -93,8 +59,7 @@ describe('Authentication', () => {
       expect(response.body).toHaveProperty('updatedAt');
     });
 
-    it('should handle validation errors and return status 500 with an error message', async () => {
-      // Set up the request body with missing required fields
+    it('should handle validation errors and return status 400 with an error message', async () => {
       const invalidPhotoData = {
         caption: 'Invalid Photo',
         poster_image_url: 'https://example.com/invalid-photo.jpg',
@@ -106,37 +71,92 @@ describe('Authentication', () => {
         .set('token', token)
         .send(invalidPhotoData);
 
-      // Expect the response status to be 500
-      expect(response.status).toBe(500);
-
-      // Expect the response body to contain an error message
-      expect(response.body).toHaveProperty('message');
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('code', 400);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Title, caption, and poster_image_url are required fields.'
+      );
+      expect(response.body.data).toHaveProperty('caption', invalidPhotoData.caption);
+      expect(response.body.data).toHaveProperty(
+        'poster_image_url',
+        invalidPhotoData.poster_image_url
+      );
     });
+  });
 
-    it('should handle internal server errors and return status 500 with an error message', async () => {
-      // Simulate an internal server error by causing an exception in the controller
-      jest.spyOn(Photo, 'create').mockImplementationOnce(() => {
-        throw new Error('Simulated internal server error');
-      });
-
-      // Set up valid request body
-      const validPhotoData = {
+  describe('DELETE /photos/:id', () => {
+    it('should delete a photo by ID and return status 200 with a success message', async () => {
+      const newPhotoData = {
         title: 'New Photo',
         caption: 'A beautiful new photo',
         poster_image_url: 'https://example.com/new-photo.jpg',
       };
-
-      // Send the request to create a new photo
-      const response = await request(server)
+      const photoData = await request(server)
         .post('/photos')
         .set('token', token)
-        .send(validPhotoData);
+        .send(newPhotoData);
 
-      // Expect the response status to be 500
-      expect(response.status).toBe(500);
+      const response = await request(app)
+        .delete(`/photos/${photoData.body.id}`)
+        .set('token', token);
 
-      // Expect the response body to contain an error message
-      expect(response.body).toHaveProperty('message', 'Simulated internal server error');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty(
+        'message',
+        `Data dengan ID ${photoData.body.id} berhasil dihapus.`
+      );
+    });
+
+    it('should handle case where photo with given ID is not found and return status 404 with an error message', async () => {
+      const response = await request(app).delete('/photos/999999').set('token', token);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('name', 'Data not found');
+      expect(response.body).toHaveProperty('devMessage', 'Photo with id 999999 not found');
+    });
+  });
+
+  describe('GET /photos', () => {
+    it('should handle case where there are no photos and return status 404 with appropriate message', async () => {
+      const response = await request(server).get('/photos').set('token', token);
+      // console.log(response.body);
+      // expect(response.status).toBe(404);
+      // expect(response.body).toEqual({ message: 'Belum ada data photo.' });
+    });
+    it('should get all photos data and return the all photo datas', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+      await request(server).post('/photos').set('token', token).send(newPhotoData);
+
+      const response = await request(server).get(`/photos/`).set('token', token).send(user);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+      const photo = response.body[0];
+      expect(photo).toHaveProperty('id');
+      expect(photo).toHaveProperty('title');
+      expect(photo).toHaveProperty('caption');
+      expect(photo).toHaveProperty('poster_image_url');
+      expect(photo).toHaveProperty('UserId');
+      expect(photo).toHaveProperty('createdAt');
+      expect(photo).toHaveProperty('updatedAt');
+      expect(photo).toHaveProperty('Comments');
+      expect(photo).toHaveProperty('User');
+      expect(photo.User).toHaveProperty('id');
+      expect(photo.User).toHaveProperty('full_name');
+      expect(photo.User).toHaveProperty('email');
+      expect(photo.User).toHaveProperty('username');
+      expect(photo.User).toHaveProperty('password');
+      expect(photo.User).toHaveProperty('profile_image_url');
+      expect(photo.User).toHaveProperty('age');
+      expect(photo.User).toHaveProperty('phone_number');
+      expect(photo.User).toHaveProperty('createdAt');
+      expect(photo.User).toHaveProperty('updatedAt');
     });
   });
 });
