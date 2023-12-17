@@ -85,38 +85,6 @@ describe('Authentication', () => {
     });
   });
 
-  describe('DELETE /photos/:id', () => {
-    it('should delete a photo by ID and return status 200 with a success message', async () => {
-      const newPhotoData = {
-        title: 'New Photo',
-        caption: 'A beautiful new photo',
-        poster_image_url: 'https://example.com/new-photo.jpg',
-      };
-      const photoData = await request(server)
-        .post('/photos')
-        .set('token', token)
-        .send(newPhotoData);
-
-      const response = await request(app)
-        .delete(`/photos/${photoData.body.id}`)
-        .set('token', token);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty(
-        'message',
-        `Data dengan ID ${photoData.body.id} berhasil dihapus.`
-      );
-    });
-
-    it('should handle case where photo with given ID is not found and return status 404 with an error message', async () => {
-      const response = await request(app).delete('/photos/999999').set('token', token);
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('name', 'Data not found');
-      expect(response.body).toHaveProperty('devMessage', 'Photo with id 999999 not found');
-    });
-  });
-
   describe('GET /photos', () => {
     it('should handle case where there are no photos and return status 404 with appropriate message', async () => {
       const response = await request(server).get('/photos').set('token', token);
@@ -157,6 +125,38 @@ describe('Authentication', () => {
       expect(photo.User).toHaveProperty('phone_number');
       expect(photo.User).toHaveProperty('createdAt');
       expect(photo.User).toHaveProperty('updatedAt');
+    });
+  });
+
+  describe('DELETE /photos/:id', () => {
+    it('should delete a photo by ID and return status 200 with a success message', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+      const photoData = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(newPhotoData);
+
+      const response = await request(app)
+        .delete(`/photos/${photoData.body.id}`)
+        .set('token', token);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty(
+        'message',
+        `Data dengan ID ${photoData.body.id} berhasil dihapus.`
+      );
+    });
+
+    it('should handle case where photo with given ID is not found and return status 404 with an error message', async () => {
+      const response = await request(app).delete('/photos/999999').set('token', token);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('name', 'Data not found');
+      expect(response.body).toHaveProperty('devMessage', 'Photo with id 999999 not found');
     });
   });
 });
