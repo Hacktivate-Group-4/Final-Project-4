@@ -7,7 +7,10 @@ class PhotoController {
     })
       .then((result) => {
         if (result.length === 0) {
-          res.status(404).json({ message: 'Belum ada data photo.' });
+          res.status(404).json({
+            code: 404,
+            message: 'Belum ada data photo.',
+          });
         } else {
           res.status(200).json(result);
         }

@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../index');
-const { User } = require('../models');
+const { User, Photo } = require('../models');
 const { verifyToken } = require('../helpers/jwt');
 
 describe('Authentication', () => {
@@ -101,11 +101,26 @@ describe('Authentication', () => {
 
   describe('GET /photos', () => {
     it('should handle case where there are no photos and return status 404 with appropriate message', async () => {
+      const photosCount = await Photo.count();
+
+      if (photosCount > 0) {
+        await Photo.destroy({
+          where: {},
+          truncate: true,
+        });
+      }
+
       const response = await request(server).get('/photos').set('token', token);
-      // console.log(response.body);
-      // expect(response.status).toBe(404);
-      // expect(response.body).toEqual({ message: 'Belum ada data photo.' });
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        code: 404,
+        message: 'Belum ada data photo.',
+      });
+      expect(response.body).toHaveProperty('code', 404);
+      expect(response.body).toHaveProperty('message', 'Belum ada data photo.');
+      expect(photosCount).toBe(0);
     });
+
     it('should get all photos data and return the all photo datas', async () => {
       const newPhotoData = {
         title: 'New Photo',
