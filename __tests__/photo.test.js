@@ -83,6 +83,20 @@ describe('Authentication', () => {
         invalidPhotoData.poster_image_url
       );
     });
+
+    it('should handle Validation isUrl on poster_image_url and return an error message', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'invalidurl',
+      };
+      const response = await request(server).post('/photos').set('token', token).send(newPhotoData);
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toHaveLength(1);
+      expect(response.body).toHaveProperty('message', 'Validation error.');
+      expect(response.body.errors[0].message).toBe('Validation isUrl on poster_image_url failed');
+      expect(response.body.errors[0].path).toBe('poster_image_url');
+    });
   });
 
   describe('GET /photos', () => {
