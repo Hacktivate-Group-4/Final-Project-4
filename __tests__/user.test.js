@@ -62,27 +62,61 @@ describe('Authentication', () => {
       expect(userData.email).toBe(decodedToken.email);
       expect(userData.full_name).toBe(decodedToken.full_name);
     });
+
     it('should return 401 for incorrect password', async () => {
+      // invalid password
+      const invalidPassword = 'incorrectpassword';
+
       const response = await request(server)
         .post('/users/login')
-        .send({ email: user.email, password: 'incorrectpassword' });
+        .send({ email: user.email, password: invalidPassword });
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
         code: 401,
         message: 'Incorrect password!',
       });
+
+      // cari dan ambil data dari database berdasarkan email
+      const UserData = await User.findOne({
+        where: {
+          email: user.email,
+        },
+      });
+
+      // check apakah benar password user berbeda
+      expect(UserData.password).not.toEqual(invalidPassword);
+
+      // chek apakah benar user yang sama
+      expect(UserData.email).toEqual(user.email);
+      expect(UserData.username).toEqual(user.username);
     });
+
     it('should return 400 for missing email in request', async () => {
+      const incorrectEmail = 'incorrect email';
+
       const response = await request(server)
         .post('/users/login')
-        .send({ email: 'incorrect email', password: 'password123' });
+        .send({ email: incorrectEmail, password: 'password123' });
 
       expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('code', 404);
+      expect(response.body).toHaveProperty('message', 'user not registered!');
       expect(response.body).toEqual({
         code: 404,
         message: 'user not registered!',
       });
+
+      // cari dan ambil data dari database berdasarkan email
+      const UserData = await User.findOne({
+        where: {
+          email: incorrectEmail,
+        },
+      });
+
+      // Pastikan UserData adalah null, menandakan bahwa
+      // pengguna dengan email tersebut tidak ditemukan
+      expect(UserData).toBeNull();
     });
   });
 
@@ -108,14 +142,20 @@ describe('Authentication', () => {
       token = response.body.token;
       userData = decodedToken;
     });
+
     it('should update user data and return the updated user details', async () => {
       const response = await request(server)
         .put(`/users/${userData.id}`)
         .set('token', token)
         .send(updatedUserData);
       expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('full_name', updatedUserData.full_name);
       expect(response.body).toHaveProperty('email', updatedUserData.email);
+      expect(response.body).toHaveProperty('username', updatedUserData.username);
+      expect(response.body).toHaveProperty('profile_image_url', updatedUserData.profile_image_url);
+      expect(response.body).toHaveProperty('age', updatedUserData.age);
+      expect(response.body).toHaveProperty('phone_number', updatedUserData.phone_number);
     });
 
     it('should fail to update user data when ID parameter is missing or not a number', async () => {
@@ -123,19 +163,35 @@ describe('Authentication', () => {
       const response = await request(server)
         .put(`/users/${invalidId}`)
         .set('token', token)
-        .send(user);
+        .send(updatedUserData);
+
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('code', 400);
       expect(response.body).toHaveProperty(
         'message',
         'Bad Request: ID parameter is missing or not a number.'
       );
+      expect(response.body).toEqual({
+        code: 400,
+        message: 'Bad Request: ID parameter is missing or not a number.',
+      });
+
+      // cari di database apakah data terupdate
+      // cari dan ambil data dari database berdasarkan email
+      const UserData = await User.findOne({
+        where: {
+          email: updatedUserData.email,
+        },
+      });
+
+      // memastikan tidak ada data dengan email dari updateduser
+      expect(UserData).toBeNull();
     });
 
-    it('should fail to update user data when user is not allowed to update', async () => {
-      const otherUserId = userData.id + 1;
+    it('should fail to update user data when user id in params is invalid or not found', async () => {
+      const invalidUserId = userData.id + 1;
       const response = await request(server)
-        .put(`/users/${otherUserId}`)
+        .put(`/users/${invalidUserId}`)
         .set('token', token)
         .send(user);
       const decodedToken = verifyToken(token);
@@ -145,6 +201,14 @@ describe('Authentication', () => {
         'message',
         `user with id ${decodedToken.id + 1} not found`
       );
+
+      // mencari data user dengan id
+      const UserData = await User.findByPk(invalidUserId);
+      // memastikdan bahwa invalid user id benar-benar tidak ada di dalam database
+      expect(UserData).toBeNull();
+
+      // memastidkan bahwa id di token dengan id user di params berbeda
+      expect(userData.id).not.toEqual(invalidUserId);
     });
   });
 
@@ -160,14 +224,31 @@ describe('Authentication', () => {
       token = userLogin.body.token;
       userData = decodedToken;
     });
+
     it('should delete user data and return the success message', async () => {
+      // mencari data di database
+      let UserData = await User.findByPk(userData.id);
+
+      // memastikan bahwa ada data dengan id yang akan di delete
+      expect(UserData).toBeTruthy();
+      expect(UserData).toHaveProperty('email');
+      expect(UserData).toHaveProperty('password');
+
       const response = await request(server)
         .delete(`/users/${userData.id}`)
         .set('token', token)
         .send(user);
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'Your account has been deleted successfully');
+
+      // mencari data di database
+      UserData = await User.findByPk(userData.id);
+
+      // memastikan bahwa tidak ada data dengan id yang sudah di delete
+      expect(UserData).toBeNull();
     });
+
     it('should fail to delete user data when ID parameter is missing or not a number', async () => {
       const invalidId = 'invalidId';
 
@@ -175,26 +256,51 @@ describe('Authentication', () => {
         .delete(`/users/${invalidId}`)
         .set('token', token)
         .send(user);
+
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('code', 400);
       expect(response.body).toHaveProperty(
         'message',
         'Bad Request: ID parameter is missing or not a number.'
       );
+
+      // mencari data di database
+      UserData = await User.findByPk(userData.id);
+
+      // memastikan bahwa id terkait tidak terdelete
+      expect(UserData).toBeTruthy();
+      expect(UserData).toHaveProperty('email');
+      expect(UserData).toHaveProperty('password');
     });
-    it('should fail to update user data when user is not allowed to update', async () => {
-      const otherUserId = userData.id + 1;
+
+    it('should fail to delete user data when user id in params is unauthorized or not found', async () => {
+      // register user
+      await request(server).post('/users/register').send(user);
+      // login user
+      const responseUser = await request(server).post('/users/login').send(user);
+      // decode the token
+      const decodedToken = verifyToken(responseUser.body.token);
+      const token = responseUser.body.token;
+      const userData = decodedToken;
+
+      const invalidUserId = userData.id + 1;
       const response = await request(server)
-        .delete(`/users/${otherUserId}`)
+        .delete(`/users/${invalidUserId}`)
         .set('token', token)
         .send(user);
-      const decodedToken = verifyToken(token);
+
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('name', 'Data not found');
-      expect(response.body).toHaveProperty(
-        'message',
-        `user with id ${decodedToken.id + 1} not found`
-      );
+      expect(response.body).toHaveProperty('message', `user with id ${invalidUserId} not found`);
+
+      // mencari data user dengan id
+      const UserData = await User.findByPk(userData.id);
+
+      // memastikdan bahwa invalid user id masih ada di dalam database
+      expect(UserData).toBeTruthy();
+
+      // memastidkan bahwa id di token dengan id user di params berbeda
+      expect(userData.id).not.toEqual(invalidUserId);
     });
   });
 });
