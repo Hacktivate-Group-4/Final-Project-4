@@ -19,6 +19,7 @@ function authorization(req, res, next) {
     .then((foundPhoto) => {
       if (!foundPhoto) {
         return res.status(404).json({
+          code: 404,
           name: 'Data not found',
           devMessage: `Photo with id ${photoId} not found`,
         });

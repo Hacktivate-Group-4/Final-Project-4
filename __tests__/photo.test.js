@@ -3,7 +3,7 @@ const app = require('../index');
 const { User, Photo } = require('../models');
 const { verifyToken } = require('../helpers/jwt');
 
-describe('Authentication', () => {
+describe('Photo test', () => {
   let server;
   let token = '';
   let userData;
@@ -154,6 +154,143 @@ describe('Authentication', () => {
       expect(photo.User).toHaveProperty('phone_number');
       expect(photo.User).toHaveProperty('createdAt');
       expect(photo.User).toHaveProperty('updatedAt');
+    });
+  });
+
+  describe('PUT /photos/:id', () => {
+    let id;
+    it('should update a photo and return status 200 with the updated photo data', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+      const createResponse = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(newPhotoData);
+
+      // Update the created photo
+      const updatedPhotoData = {
+        title: 'Updated Photo',
+        caption: 'An updated beautiful photo',
+        poster_image_url: 'https://example.com/updated-photo.jpg',
+      };
+      const updateResponse = await request(server)
+        .put(`/photos/${createResponse.body.id}`)
+        .set('token', token)
+        .send(updatedPhotoData);
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body[1][0]).toHaveProperty('id', createResponse.body.id);
+      expect(updateResponse.body[1][0].title).toBe(updatedPhotoData.title);
+      expect(updateResponse.body[1][0].caption).toBe(updatedPhotoData.caption);
+      expect(updateResponse.body[1][0].poster_image_url).toBe(updatedPhotoData.poster_image_url);
+      expect(updateResponse.body[1][0].UserId).toBe(userData.id);
+      expect(updateResponse.body[1][0]).toHaveProperty('createdAt');
+      expect(updateResponse.body[1][0]).toHaveProperty('updatedAt');
+    });
+
+    it('should handle validation errors and return status 400 with an error message', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+
+      const createResponse = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(newPhotoData);
+
+      const invalidPhotoData = {
+        caption: 'Invalid Photo',
+        poster_image_url: 'https://example.com/invalid-photo.jpg',
+      };
+
+      // Send the request with invalid data
+      const response = await request(server)
+        .put(`/photos/${createResponse.body.id}`)
+        .set('token', token)
+        .send(invalidPhotoData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('code', 400);
+      expect(response.body).toHaveProperty('name', 'required fields not provided!');
+      expect(response.body).toHaveProperty(
+        'message',
+        `Title, caption, and poster_image_url are required fields.`
+      );
+      expect(response.body).toEqual({
+        code: 400,
+        name: 'required fields not provided!',
+        message: 'Title, caption, and poster_image_url are required fields.',
+      });
+    });
+
+    it('should handle case where the photo ID does not exist and return status 404 with appropriate message', async () => {
+      const nonExistentId = 9999;
+      const updatedPhotoData = {
+        title: 'Updated Photo',
+        caption: 'An updated beautiful photo',
+        poster_image_url: 'https://example.com/updated-photo.jpg',
+      };
+
+      const response = await request(server)
+        .put(`/photos/${nonExistentId}`)
+        .set('token', token)
+        .send(updatedPhotoData);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('code', 404);
+      expect(response.body).toHaveProperty('name', 'Data not found');
+      expect(response.body).toHaveProperty(
+        'devMessage',
+        `Photo with id ${nonExistentId} not found`
+      );
+      expect(response.body).toEqual({
+        code: 404,
+        devMessage: `Photo with id ${nonExistentId} not found`,
+        name: 'Data not found',
+      });
+    });
+
+    it('should handle url validation and return status 400 with an error message', async () => {
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+      const createResponse = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(newPhotoData);
+
+      const updatedPhotoData = {
+        title: 'Updated Photo',
+        caption: 'An updated beautiful photo',
+        poster_image_url: 'invalid url',
+      };
+      const updateResponse = await request(server)
+        .put(`/photos/${createResponse.body.id}`)
+        .set('token', token)
+        .send(updatedPhotoData);
+      console.log(createResponse.body);
+      console.log(updateResponse.body);
+
+      expect(updateResponse.body).toHaveProperty(
+        'message',
+        `Validation error: Validation isUrl on poster_image_url failed`
+      );
+      expect(updateResponse.body).toEqual({
+        message: 'Validation error: Validation isUrl on poster_image_url failed',
+      });
+      const photodata = await Photo.findByPk(createResponse.body.id);
+
+      // cek data photo di database
+      expect(photodata.title).not.toEqual(updatedPhotoData.title);
+      expect(photodata.caption).not.toEqual(updatedPhotoData.caption);
+      expect(photodata.poster_image_url).not.toEqual(updatedPhotoData.poster_image_url);
     });
   });
 

@@ -38,6 +38,15 @@ class PhotoController {
   static UpdateOnePhotoById(req, res) {
     let id = +req.params.id;
     const { title, caption, poster_image_url } = req.body;
+
+    if (!title || !caption || !poster_image_url) {
+      return res.status(400).json({
+        code: 400,
+        name: 'required fields not provided!',
+        message: 'Title, caption, and poster_image_url are required fields.',
+      });
+    }
+
     const userData = req.UserData;
     let data = {
       title,
