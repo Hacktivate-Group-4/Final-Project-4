@@ -28,6 +28,7 @@ function authorization(req, res, next) {
         return next();
       } else {
         return res.status(403).json({
+          code: 403,
           name: 'Authorization failed',
           devMessage: `User with id ${foundPhoto.userid} does not have permission to access the photo`,
         });

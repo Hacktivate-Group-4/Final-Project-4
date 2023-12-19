@@ -25,7 +25,6 @@ describe('Photo test', () => {
   beforeEach(async () => {
     await User.destroy({ where: { email: user.email } });
     await request(server).post('/users/register').send(user);
-    await request(server).post('/users/login').send(user);
     const userLogin = await request(server).post('/users/login').send(user);
     const decodedToken = verifyToken(userLogin.body.token);
     token = userLogin.body.token;
@@ -275,8 +274,6 @@ describe('Photo test', () => {
         .put(`/photos/${createResponse.body.id}`)
         .set('token', token)
         .send(updatedPhotoData);
-      console.log(createResponse.body);
-      console.log(updateResponse.body);
 
       expect(updateResponse.body).toHaveProperty(
         'message',
@@ -306,23 +303,94 @@ describe('Photo test', () => {
         .set('token', token)
         .send(newPhotoData);
 
+      // cek data photo di database terlebih dahulu
+      const photoDataFromDatabase = await Photo.findByPk(photoData.body.id);
+
+      expect(photoDataFromDatabase).toHaveProperty('id', photoData.body.id);
+      expect(photoDataFromDatabase).toHaveProperty('title', photoData.body.title);
+      expect(photoDataFromDatabase).toHaveProperty('caption', photoData.body.caption);
+      expect(photoDataFromDatabase).toHaveProperty(
+        'poster_image_url',
+        photoData.body.poster_image_url
+      );
+
       const response = await request(app)
         .delete(`/photos/${photoData.body.id}`)
         .set('token', token);
 
+      const photoDataFromDatabase2 = await Photo.findByPk(photoData.body.id);
       expect(response.status).toBe(200);
+      expect(photoDataFromDatabase2).toBe(null);
       expect(response.body).toHaveProperty(
         'message',
         `Data dengan ID ${photoData.body.id} berhasil dihapus.`
       );
     });
 
+    it('should handle case where other user delete ur photo and return status 403 with an error message', async () => {
+      // other user initiate
+      const otherUser = {
+        full_name: 'liu kang',
+        email: 'liukang@gmail.com',
+        username: 'liukang',
+        password: 'password123',
+        profile_image_url:
+          'https://plus.unsplash.com/premium_photo-1700782893131-1f17b56098d0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyfHx8ZW58MHx8fHx8',
+        age: 34,
+        phone_number: '123456789',
+      };
+
+      await request(server).post('/users/register').send(otherUser);
+      const otherUserLogin = await request(server).post('/users/login').send(otherUser);
+      const otherUserToken = otherUserLogin.body.token;
+
+      //user post new photo
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+      const createPhotoResponse = await request(server)
+        .post('/photos')
+        .set('token', token) // create with user token
+        .send(newPhotoData);
+
+      // try to delete ur photo using other user token
+      const response = await request(app)
+        .delete(`/photos/${createPhotoResponse.body.id}`)
+        .set('token', otherUserToken);
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('code', 403);
+      expect(response.body).toHaveProperty('name', 'Authorization failed');
+      expect(response.body).toHaveProperty(
+        'devMessage',
+        'User with id undefined does not have permission to access the photo'
+      );
+
+      // cek di database apakah data masih ada
+      const photoDataFromDatabase = await Photo.findByPk(createPhotoResponse.body.id);
+      expect(photoDataFromDatabase).toHaveProperty('title', createPhotoResponse.body.title);
+      expect(photoDataFromDatabase).toHaveProperty('caption', createPhotoResponse.body.caption);
+      expect(photoDataFromDatabase).toHaveProperty(
+        'poster_image_url',
+        createPhotoResponse.body.poster_image_url
+      );
+    });
+
     it('should handle case where photo with given ID is not found and return status 404 with an error message', async () => {
-      const response = await request(app).delete('/photos/999999').set('token', token);
+      const invalidId = 9999;
+      const response = await request(app).delete(`/photos/${invalidId}`).set('token', token);
 
       expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('code', 404);
       expect(response.body).toHaveProperty('name', 'Data not found');
-      expect(response.body).toHaveProperty('devMessage', 'Photo with id 999999 not found');
+      expect(response.body).toHaveProperty('devMessage', `Photo with id ${invalidId} not found`);
+      expect(response.body).toEqual({
+        code: 404,
+        devMessage: `Photo with id ${invalidId} not found`,
+        name: 'Data not found',
+      });
     });
   });
 });
