@@ -327,7 +327,7 @@ describe('Photo test', () => {
       );
     });
 
-    it('should handle case where other user delete ur photo and return status 403 with an error message', async () => {
+    it('should return 401 or 403 when deleting without authorization', async () => {
       // other user initiate
       const otherUser = {
         full_name: 'liu kang',
@@ -378,7 +378,7 @@ describe('Photo test', () => {
       );
     });
 
-    it('should handle case where photo with given ID is not found and return status 404 with an error message', async () => {
+    it('should return 404 when trying to delete a non-existing resource', async () => {
       const invalidId = 9999;
       const response = await request(app).delete(`/photos/${invalidId}`).set('token', token);
 
@@ -391,6 +391,39 @@ describe('Photo test', () => {
         devMessage: `Photo with id ${invalidId} not found`,
         name: 'Data not found',
       });
+    });
+
+    it('should return 500 when trying to access the delete endpoint with invalid token', async () => {
+      //user post new photo
+      const newPhotoData = {
+        title: 'New Photo',
+        caption: 'A beautiful new photo',
+        poster_image_url: 'https://example.com/new-photo.jpg',
+      };
+
+      const createPhotoResponse = await request(server)
+        .post('/photos')
+        .set('token', token)
+        .send(newPhotoData);
+
+      token = token + 'invalid';
+
+      // try to delete photo
+      const response = await request(app)
+        .delete(`/photos/${createPhotoResponse.body.id}`)
+        .set('token', token);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual('invalid signature');
+
+      // cek di database apakah data masih ada
+      const photoDataFromDatabase = await Photo.findByPk(createPhotoResponse.body.id);
+      expect(photoDataFromDatabase).toHaveProperty('title', createPhotoResponse.body.title);
+      expect(photoDataFromDatabase).toHaveProperty('caption', createPhotoResponse.body.caption);
+      expect(photoDataFromDatabase).toHaveProperty(
+        'poster_image_url',
+        createPhotoResponse.body.poster_image_url
+      );
     });
   });
 });
