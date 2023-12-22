@@ -1,5 +1,5 @@
-const { User, Photo, Comment, SocialMedia } = require("../models");
-const { generateToken } = require("../helpers/jwt");
+const { User, Photo, Comment, SocialMedia } = require("./models");
+const { generateToken } = require("./helpers/jwt");
 
 const dataUser = {
   full_name: "testfull",
