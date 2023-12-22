@@ -130,6 +130,7 @@ describe('Photo test', () => {
 
       const response = await request(server).get(`/photos/`).set('token', token).send(user);
 
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);

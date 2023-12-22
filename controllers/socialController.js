@@ -1,4 +1,4 @@
-const { SocialMedia, User } = require('../models');
+const { SocialMedia, User } = require("../models");
 
 class SocialController {
   static GetAllSocials(req, res) {
@@ -7,7 +7,9 @@ class SocialController {
     })
       .then((result) => {
         if (result.length === 0) {
-          res.status(404).json({ message: 'Belum ada data social media.' });
+          res.status(404).json({ 
+            code: 404,
+            message: "Belum ada data social media." });
         } else {
           res.status(200).json(result);
         }
@@ -24,7 +26,9 @@ class SocialController {
         if (result) {
           res.status(200).json(result);
         } else {
-          res.status(404).json({ message: 'Not Found' });
+          res.status(404).json({
+            code: 404,
+            message: "Not Found" });
         }
       })
       .catch((err) => {
@@ -35,6 +39,15 @@ class SocialController {
   static async UpdateOneSocialById(req, res) {
     let id = +req.params.id;
     const { name, social_media_url } = req.body;
+    console.log(name);
+    // Validate that required fields are present
+    if (!name || !social_media_url) {
+      return res.status(400).json({
+        code: 400,
+        name: "required fields not provided!",
+        message: "name and social_media_url required fields.",
+      });
+    }
     const userData = req.UserData;
     let data = {
       name,
@@ -81,7 +94,14 @@ class SocialController {
   static async CreateSocial(req, res) {
     try {
       const { name, social_media_url } = req.body;
-
+      // Validate that required fields are present
+      if (!name || !social_media_url) {
+        return res.status(400).json({
+          code: 400,
+          message: "name and social_media_url required fields.",
+          data: req.body,
+        });
+      }
       const userData = req.UserData;
 
       const data = await SocialMedia.create({
