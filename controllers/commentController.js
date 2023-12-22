@@ -1,4 +1,4 @@
-const { Comment, User, Photo } = require("../models");
+const { Comment, User, Photo } = require('../models');
 
 class CommentController {
   static async GetAllComments(req, res) {
@@ -11,7 +11,7 @@ class CommentController {
         // Tidak ada komentar ditemukan
         res.status(404).json({
           code: 404,
-          message: "Tidak ada komentar yang tersedia.",
+          message: 'Tidak ada komentar yang tersedia.',
         });
       } else {
         // Komentar ditemukan
@@ -34,7 +34,7 @@ class CommentController {
       } else {
         res.status(404).json({
           code: 404,
-          message: "Not Found",
+          message: 'Not Found',
         });
       }
     } catch (error) {
@@ -53,8 +53,8 @@ class CommentController {
     if (!comment || !PhotoId) {
       return res.status(400).json({
         code: 400,
-        name: "required fields not provided!",
-        message: "comment and PhotoId required fields.",
+        name: 'required fields not provided!',
+        message: 'comment and PhotoId required fields.',
       });
     }
 
@@ -63,9 +63,6 @@ class CommentController {
         { comment, UserId: userData.id, PhotoId },
         { where: { id }, returning: true }
       );
-
-      console.log(updatedRowsCount);
-      console.log(updatedRows);
 
       if (updatedRowsCount > 0) {
         res.status(200).json(updatedRows[0]);
@@ -86,9 +83,7 @@ class CommentController {
       const deletedRowCount = await Comment.destroy({ where: { id } });
 
       if (deletedRowCount > 0) {
-        res
-          .status(200)
-          .json({ message: `Comment with id ${id} deleted successfully` });
+        res.status(200).json({ message: `Comment with id ${id} deleted successfully` });
       } else {
         res.status(404).json({ message: `Comment with id ${id} not found` });
       }
@@ -105,7 +100,7 @@ class CommentController {
     if (!comment || !PhotoId) {
       return res.status(400).json({
         code: 400,
-        message: "comment and PhotoId required fields.",
+        message: 'comment and PhotoId required fields.',
         data: req.body,
       });
     }
@@ -115,10 +110,9 @@ class CommentController {
         UserId: userData.id,
         PhotoId,
       });
-      console.log(newComment);
       res.status(201).json(newComment);
     } catch (error) {
-      res.status(500).json({ message: "Internal Server Error." });
+      res.status(500).json({ message: 'Internal Server Error.' });
     }
   }
 }

@@ -1,19 +1,14 @@
-const request = require("supertest");
-const app = require("../index");
-const { User, Photo, Comment } = require("../models");
-const {
-  createUser,
-  createPhoto,
-  generateTokenTesting,
-  createComment,
-} = require("../testing");
+const request = require('supertest');
+const app = require('../index');
+const { User, Photo, Comment } = require('../models');
+const { createUser, createPhoto, generateTokenTesting, createComment } = require('../testing');
 
 const dataComment = {
-  comment: "commentsTest",
+  comment: 'commentsTest',
   PhotoId: 2,
 };
 const updateComment = {
-  comment: "commentsTestUpdate",
+  comment: 'commentsTestUpdate',
 
   PhotoId: 2,
 };
@@ -22,7 +17,7 @@ let token;
 // let server;
 
 // create comments
-describe("POST /comments", () => {
+describe('POST /comments', () => {
   // beforeAll(async () => {
   //   server = app.listen();
   // });
@@ -30,58 +25,55 @@ describe("POST /comments", () => {
     try {
       const user = await createUser();
       token = await generateTokenTesting(user);
-      await createPhoto(2, "photo 1", user.id);
+      await createPhoto(2, 'photo 1', user.id);
     } catch (error) {
-      console.error("Error during test setup:", error);
+      console.error('Error during test setup:', error);
     }
   });
-  it("should create Comments success (201)", (done) => {
+  it('should create Comments success (201)', (done) => {
     request(app)
-      .post("/comments")
+      .post('/comments')
       .send(dataComment)
       .set({ Authorization: token })
       .expect(201)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toHaveProperty("id");
-        expect(res.body).toHaveProperty("comment");
-        expect(res.body).toHaveProperty("PhotoId");
-        expect(res.body).toHaveProperty("UserId");
-        expect(res.body).toHaveProperty("createdAt");
-        expect(res.body).toHaveProperty("updatedAt");
+        expect(res.body).toHaveProperty('id');
+        expect(res.body).toHaveProperty('comment');
+        expect(res.body).toHaveProperty('PhotoId');
+        expect(res.body).toHaveProperty('UserId');
+        expect(res.body).toHaveProperty('createdAt');
+        expect(res.body).toHaveProperty('updatedAt');
         done();
       });
   });
-  it("should be error no auth (401)", (done) => {
+  it('should be error no auth (401)', (done) => {
     request(app)
-      .post("/comments")
+      .post('/comments')
       .send(dataComment)
-      .set({ Authorization: "" })
+      .set({ Authorization: '' })
       .expect(401)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toBe("Token not provided!");
+        expect(res.body).toBe('Token not provided!');
         done();
       });
   });
-  it("should be error no auth (400)", (done) => {
+  it('should be error validation (400)', (done) => {
     const testComment = {
-      comment: "commentsTest",
+      comment: 'commentsTest',
     };
     request(app)
-      .post("/comments")
+      .post('/comments')
       .send(testComment)
       .set({ Authorization: token })
       .expect(400)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty("code", 400);
-        expect(res.body).toHaveProperty(
-          "message",
-          "comment and PhotoId required fields."
-        );
-        expect(res.body.data).toHaveProperty("comment", testComment.comment);
+        expect(res.body).toHaveProperty('code', 400);
+        expect(res.body).toHaveProperty('message', 'comment and PhotoId required fields.');
+        expect(res.body.data).toHaveProperty('comment', testComment.comment);
         done();
       });
   });
@@ -91,7 +83,7 @@ describe("POST /comments", () => {
       await Photo.destroy({ where: {} });
       await Comment.destroy({ where: {} });
     } catch (error) {
-      console.error("Error during test cleanup:", error);
+      console.error('Error during test cleanup:', error);
     }
   });
   // afterAll(async (done) => {
@@ -100,7 +92,7 @@ describe("POST /comments", () => {
 });
 
 // views comments all
-describe("GET /comments", () => {
+describe('GET /comments', () => {
   // beforeAll(async () => {
   //   server = app.listen();
   // });
@@ -108,17 +100,17 @@ describe("GET /comments", () => {
     try {
       const user = await createUser();
       token = await generateTokenTesting(user);
-      await createPhoto(1, "photo 1", user.id);
-      await createPhoto(2, "photo 2", user.id);
+      await createPhoto(1, 'photo 1', user.id);
+      await createPhoto(2, 'photo 2', user.id);
       await createComment(1, 1, user.id);
       await createComment(2, 2, user.id);
     } catch (error) {
-      console.error("Error during test setup:", error);
+      console.error('Error during test setup:', error);
     }
   });
-  it("should Get Comments success (200)", (done) => {
+  it('should Get Comments success (200)', (done) => {
     request(app)
-      .get("/comments")
+      .get('/comments')
       .set({ Authorization: token })
       .expect(200)
       .end((err, res) => {
@@ -128,24 +120,24 @@ describe("GET /comments", () => {
         expect(res.body.length).toBeGreaterThan(0);
         const comment = res.body[0];
         expect(res.body).toHaveLength(2);
-        expect(comment).toHaveProperty("id");
-        expect(comment).toHaveProperty("comment");
-        expect(comment).toHaveProperty("PhotoId");
-        expect(comment).toHaveProperty("UserId");
-        expect(comment.User).toHaveProperty("full_name");
-        expect(comment.User).toHaveProperty("email");
-        expect(comment.User).toHaveProperty("username");
-        expect(comment.User).toHaveProperty("password");
-        expect(comment.User).toHaveProperty("profile_image_url");
-        expect(comment.User).toHaveProperty("age");
-        expect(comment.User).toHaveProperty("phone_number");
-        expect(comment.Photo).toHaveProperty("title");
-        expect(comment.Photo).toHaveProperty("caption");
-        expect(comment.Photo).toHaveProperty("poster_image_url");
+        expect(comment).toHaveProperty('id');
+        expect(comment).toHaveProperty('comment');
+        expect(comment).toHaveProperty('PhotoId');
+        expect(comment).toHaveProperty('UserId');
+        expect(comment.User).toHaveProperty('full_name');
+        expect(comment.User).toHaveProperty('email');
+        expect(comment.User).toHaveProperty('username');
+        expect(comment.User).toHaveProperty('password');
+        expect(comment.User).toHaveProperty('profile_image_url');
+        expect(comment.User).toHaveProperty('age');
+        expect(comment.User).toHaveProperty('phone_number');
+        expect(comment.Photo).toHaveProperty('title');
+        expect(comment.Photo).toHaveProperty('caption');
+        expect(comment.Photo).toHaveProperty('poster_image_url');
         done();
       });
   });
-  it("should handle case where there are no Comments and return status 404 with appropriate message", async () => {
+  it('should handle case where there are no Comments and return status 404 with appropriate message', async () => {
     const commentsCount = await Comment.count();
     if (commentsCount > 0) {
       await Comment.destroy({
@@ -154,7 +146,7 @@ describe("GET /comments", () => {
       });
     }
     request(app)
-      .get("/comments")
+      .get('/comments')
       .set({ Authorization: token })
       .expect(404)
       .end((err, res) => {
@@ -162,25 +154,22 @@ describe("GET /comments", () => {
         expect(res.status).toBe(404);
         expect(res.body).toEqual({
           code: 404,
-          message: "Tidak ada komentar yang tersedia.",
+          message: 'Tidak ada komentar yang tersedia.',
         });
-        expect(res.body).toHaveProperty("code", 404);
-        expect(res.body).toHaveProperty(
-          "message",
-          "Tidak ada komentar yang tersedia."
-        );
+        expect(res.body).toHaveProperty('code', 404);
+        expect(res.body).toHaveProperty('message', 'Tidak ada komentar yang tersedia.');
         expect(commentsCount).toBe(2);
         // done();
       });
   });
-  it("should be error no auth (401)", (done) => {
+  it('should be error no auth (401)', (done) => {
     request(app)
-      .get("/comments")
-      .set({ Authorization: "" })
+      .get('/comments')
+      .set({ Authorization: '' })
       .expect(401)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toBe("Token not provided!");
+        expect(res.body).toBe('Token not provided!');
         done();
       });
   });
@@ -190,7 +179,7 @@ describe("GET /comments", () => {
       await Photo.destroy({ where: {} });
       await Comment.destroy({ where: {} });
     } catch (error) {
-      console.error("Error during test cleanup:", error);
+      console.error('Error during test cleanup:', error);
     }
   });
   // afterAll(async (done) => {
@@ -199,7 +188,7 @@ describe("GET /comments", () => {
 });
 
 // views comments by id
-describe("GET /comments/:id", () => {
+describe('GET /comments/:id', () => {
   // beforeAll(async () => {
   //   server = app.listen();
   // });
@@ -207,41 +196,41 @@ describe("GET /comments/:id", () => {
     try {
       const user = await createUser();
       token = await generateTokenTesting(user);
-      await createPhoto(1, "photo 1", user.id);
-      await createPhoto(2, "photo 2", user.id);
+      await createPhoto(1, 'photo 1', user.id);
+      await createPhoto(2, 'photo 2', user.id);
       await createComment(1, 1, user.id);
       await createComment(2, 2, user.id);
     } catch (error) {
-      console.error("Error during test setup:", error);
+      console.error('Error during test setup:', error);
     }
   });
-  it("should Get Comments success (200)", (done) => {
+  it('should Get Comments success (200)', (done) => {
     request(app)
-      .get("/comments/1")
+      .get('/comments/1')
       .set({ Authorization: token })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.body.id).toBe(1);
-        expect(res.body).toHaveProperty("id");
-        expect(res.body).toHaveProperty("comment");
-        expect(res.body).toHaveProperty("PhotoId");
-        expect(res.body).toHaveProperty("UserId");
+        expect(res.body).toHaveProperty('id');
+        expect(res.body).toHaveProperty('comment');
+        expect(res.body).toHaveProperty('PhotoId');
+        expect(res.body).toHaveProperty('UserId');
         done();
       });
   });
-  it("should be error no auth (401)", (done) => {
+  it('should be error no auth (401)', (done) => {
     request(app)
-      .get("/comments/1")
-      .set({ Authorization: "" })
+      .get('/comments/1')
+      .set({ Authorization: '' })
       .expect(401)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toBe("Token not provided!");
+        expect(res.body).toBe('Token not provided!');
         done();
       });
   });
-  it("should handle case where there are no Comments by Id and return status 404 with appropriate message", async () => {
+  it('should handle case where there are no Comments by Id and return status 404 with appropriate message', async () => {
     const commentsCount = await Comment.count();
     if (commentsCount > 0) {
       await Comment.destroy({
@@ -250,14 +239,14 @@ describe("GET /comments/:id", () => {
       });
     }
     request(app)
-      .get("/comments/1")
+      .get('/comments/1')
       .set({ Authorization: token })
       .expect(404)
       .end((err, res, done) => {
         if (err) return err;
         expect(res.status).toBe(404);
-        expect(res.body).toHaveProperty("code", 404);
-        expect(res.body).toHaveProperty("message", "Not Found");
+        expect(res.body).toHaveProperty('code', 404);
+        expect(res.body).toHaveProperty('message', 'Not Found');
         expect(commentsCount).toBe(2);
         done();
       });
@@ -268,7 +257,7 @@ describe("GET /comments/:id", () => {
       await Photo.destroy({ where: {} });
       await Comment.destroy({ where: {} });
     } catch (error) {
-      console.error("Error during test cleanup:", error);
+      console.error('Error during test cleanup:', error);
     }
   });
   // afterAll(async (done) => {
@@ -277,7 +266,7 @@ describe("GET /comments/:id", () => {
 });
 
 // update comments
-describe("PUT /comments/2", () => {
+describe('PUT /comments/2', () => {
   // beforeAll(async () => {
   //   server = app.listen();
   // });
@@ -285,56 +274,50 @@ describe("PUT /comments/2", () => {
     try {
       const user = await createUser();
       token = await generateTokenTesting(user);
-      await createPhoto(1, "photo 1", user.id);
-      await createPhoto(2, "photo 2", user.id);
+      await createPhoto(1, 'photo 1', user.id);
+      await createPhoto(2, 'photo 2', user.id);
       await createComment(1, 1, user.id);
       await createComment(2, 2, user.id);
     } catch (error) {
-      console.error("Error during test setup:", error);
+      console.error('Error during test setup:', error);
     }
   });
-  it("should update Comments success (200)", (done) => {
+  it('should update Comments success (200)', (done) => {
     request(app)
-      .put("/comments/2")
+      .put('/comments/2')
       .set({ Authorization: token })
       .expect(200)
       .send(updateComment)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty("comment", updateComment.comment);
-        expect(res.body).toHaveProperty("PhotoId", updateComment.PhotoId);
+        expect(res.body).toHaveProperty('comment', updateComment.comment);
+        expect(res.body).toHaveProperty('PhotoId', updateComment.PhotoId);
         // expect(res.body[0].UserId).toBe(user.id);
-        expect(res.body).toHaveProperty("createdAt");
-        expect(res.body).toHaveProperty("updatedAt");
+        expect(res.body).toHaveProperty('createdAt');
+        expect(res.body).toHaveProperty('updatedAt');
         done();
       });
   });
-  it("should be error validasi (400)", (done) => {
+  it('should be error validasi (400)', (done) => {
     const testComment = {
-      comment: "commentslagi",
+      comment: 'commentslagi',
     };
     request(app)
-      .put("/comments/2")
+      .put('/comments/2')
       .send(testComment)
       .set({ Authorization: token })
       .expect(400)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty("code", 400);
-        expect(res.body).toHaveProperty(
-          "message",
-          "comment and PhotoId required fields."
-        );
-        expect(res.body).toHaveProperty(
-          "name",
-          "required fields not provided!"
-        );
+        expect(res.body).toHaveProperty('code', 400);
+        expect(res.body).toHaveProperty('message', 'comment and PhotoId required fields.');
+        expect(res.body).toHaveProperty('name', 'required fields not provided!');
         done();
       });
   });
-  it("should be error not found (404)", (done) => {
+  it('should be error not found (404)', (done) => {
     const idEx = 9999;
     request(app)
       .put(`/comments/${idEx}`)
@@ -345,16 +328,10 @@ describe("PUT /comments/2", () => {
         if (err) return done(err);
         expect(res.status).toBe(404);
         // expect(res.body).toHaveProperty("code", 404);
-        expect(res.body).toHaveProperty("name", "Data not found");
-        expect(res.body).toHaveProperty(
-          "devMessage",
-          `comment with id ${idEx} not found`
-        );
-        expect(res.body).toHaveProperty(
-          "devMessage",
-          `comment with id ${idEx} not found`
-        );
-        expect(res.body).toHaveProperty("name", "Data not found");
+        expect(res.body).toHaveProperty('name', 'Data not found');
+        expect(res.body).toHaveProperty('devMessage', `comment with id ${idEx} not found`);
+        expect(res.body).toHaveProperty('devMessage', `comment with id ${idEx} not found`);
+        expect(res.body).toHaveProperty('name', 'Data not found');
         // expect(res.body).toEqual({
         //   code: 404,
         //   devMessage: `comment with id ${idEx} not found`,
@@ -364,15 +341,15 @@ describe("PUT /comments/2", () => {
       });
   });
 
-  it("should be error no auth (401)", (done) => {
+  it('should be error no auth (401)', (done) => {
     request(app)
-      .put("/comments/2")
-      .set({ Authorization: "" })
+      .put('/comments/2')
+      .set({ Authorization: '' })
       .expect(401)
       .send(updateComment)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toBe("Token not provided!");
+        expect(res.body).toBe('Token not provided!');
         done();
       });
   });
@@ -382,7 +359,7 @@ describe("PUT /comments/2", () => {
       await Photo.destroy({ where: {} });
       await Comment.destroy({ where: {} });
     } catch (error) {
-      console.error("Error during test cleanup:", error);
+      console.error('Error during test cleanup:', error);
     }
   });
   // afterAll(async (done) => {
@@ -391,7 +368,7 @@ describe("PUT /comments/2", () => {
 });
 
 //delete comments
-describe("DELETE /comments/1", () => {
+describe('DELETE /comments/1', () => {
   // beforeAll(async () => {
   //   server = app.listen();
   // });
@@ -399,26 +376,23 @@ describe("DELETE /comments/1", () => {
     try {
       const user = await createUser();
       token = await generateTokenTesting(user);
-      await createPhoto(1, "photo 1", user.id);
-      await createPhoto(2, "photo 2", user.id);
+      await createPhoto(1, 'photo 1', user.id);
+      await createPhoto(2, 'photo 2', user.id);
       await createComment(1, 1, user.id);
       await createComment(2, 2, user.id);
     } catch (error) {
-      console.error("Error during test setup:", error);
+      console.error('Error during test setup:', error);
     }
   });
-  it("should update Comments success (200)", (done) => {
+  it('should update Comments success (200)', (done) => {
     request(app)
-      .delete("/comments/1")
+      .delete('/comments/1')
       .set({ Authorization: token })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
         expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty(
-          "message",
-          "Comment with id 1 deleted successfully"
-        );
+        expect(res.body).toHaveProperty('message', 'Comment with id 1 deleted successfully');
         done();
       });
   });
@@ -472,7 +446,7 @@ describe("DELETE /comments/1", () => {
   //     createPhotoResponse.body.poster_image_url
   //   );
   // });
-  it("should return 404 when trying to delete a non-existing resource", (done) => {
+  it('should return 404 when trying to delete a non-existing resource', (done) => {
     const idEx = 9999;
     request(app)
       .delete(`/comments/${idEx}`)
@@ -483,28 +457,25 @@ describe("DELETE /comments/1", () => {
         if (err) return done(err);
         expect(res.status).toBe(404);
         // expect(res.body).toHaveProperty("code", 404);
-        expect(res.body).toHaveProperty("name", "Data not found");
-        expect(res.body).toHaveProperty(
-          "devMessage",
-          `comment with id ${idEx} not found`
-        );
+        expect(res.body).toHaveProperty('name', 'Data not found');
+        expect(res.body).toHaveProperty('devMessage', `comment with id ${idEx} not found`);
         expect(res.body).toEqual({
           // code: 404,
           devMessage: `comment with id ${idEx} not found`,
-          name: "Data not found",
+          name: 'Data not found',
         });
         done();
       });
   });
-  it("should be error no auth (401)", (done) => {
+  it('should be error no auth (401)', (done) => {
     request(app)
-      .delete("/comments/2")
-      .set({ Authorization: "" })
+      .delete('/comments/2')
+      .set({ Authorization: '' })
       .expect(401)
       .send(dataComment)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).toBe("Token not provided!");
+        expect(res.body).toBe('Token not provided!');
         done();
       });
   });
@@ -514,7 +485,7 @@ describe("DELETE /comments/1", () => {
       await Photo.destroy({ where: {} });
       await Comment.destroy({ where: {} });
     } catch (error) {
-      console.error("Error during test cleanup:", error);
+      console.error('Error during test cleanup:', error);
     }
   });
   // afterAll(async (done) => {
